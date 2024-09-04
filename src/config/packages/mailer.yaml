@@ -1,0 +1,8 @@
+framework:
+    mailer:
+        dsn: '%env(MAILER_DSN)%'
+        # dsn: 'smtp://pabllito.perez1@gmail.com:%env(MAILER_PASSWORD)%@smtp.gmail.com:587'
+        # username: 'pabllito.perez1@gmail.com'
+        # password: '%env(MAILER_PASSWORD)%'
+        # sender_address: 'pabllito.perez1@gmail.com'
+        # sender_name: 'Administracion MAPAW'
