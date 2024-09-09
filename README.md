@@ -18,9 +18,14 @@ Para la instalación se recomienda utilizar Docker que facilita la instalación 
 
 
 ## Utilidades
+
+### Docker
 * Iniciar contenedores: `docker-compose start`.
 * Detener contenedores: `docker-compose stop`.
 * Eliminar contenedores: `docker-compose down`.
+* Ingresar al contendor php: `docker exec -it tenis_php bash`. 
+
+### MySQL
 * Para ingresar a la base de datos, se puede utilizar cualquier cliente de MySQL como [MySQL Workbench](https://dev.mysql.com/downloads/workbench/). Las credenciales son:
     * host: localhost.
     * base de datos: tenis.
@@ -28,3 +33,8 @@ Para la instalación se recomienda utilizar Docker que facilita la instalación 
     * password: tenis.
     * puerto: 3309. 
 
+### Symfony
+* Generar migraciones: `docker exec -it tenis_php php bin/console make:migration`.
+* Ejecutar migraciones: `docker exec -it tenis_php php bin/console doctrine:migrations:migrate`.
+
+Nota: Estos comandos están escritos para ejecutarse fuera del contenedor, es decir desde una terminal en el host. Para correrlos desde una terminal dentro del contenedor se debe eliminar la primera parte del comando: `docker exec -it tenis_php`.  
