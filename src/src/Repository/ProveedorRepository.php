@@ -38,4 +38,9 @@ class ProveedorRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function findOneById(int $id): ?Proveedor
+    {
+      return $this->find($id);
+    }
 }

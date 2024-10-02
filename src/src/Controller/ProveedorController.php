@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\ProveedorRepository;
 
 /**
  * @Route(path="/api")
@@ -69,7 +70,26 @@ class ProveedorController extends AbstractController
         return $this->json(($resp));
     }
 
-    /**
+    /*
+     * @Route("/proveedor/{id}", name="app_modificar_proveedor", methods={"PUT"})
+     * 
+    */
+    public function updateProveedor(Request $request,$id, ProveedorRepository $proveedorRepository){
+        $data = json_decode( $request->getContent());
+        $nombre = $data->nombre;
+        $telefono = $data->telefono;
+
+        if(null !== $proveedor = $proveedorRepository->findOneById($id)){
+            $proveedor->setNombre($nombre)->setTelefono($telefono);
+            $proveedorRepository->add($proveedor, true);
+            return $this->json($proveedor)->setStatusCode(200);
+        }
+        return $this->json([
+            'message' => 'No se ha encontrado el proveedor.',
+        ])->setStatusCode(404);
+      
+      
+    /*
      * @Route("/proveedor/{id}", name="app_baja_proveedor", methods={"DELETE"})
      */
     public function deleteProveedor($id, ProveedorRepository $proveedorRepository): Response
