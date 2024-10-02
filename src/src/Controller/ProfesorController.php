@@ -30,12 +30,12 @@ class ProfesorController extends AbstractController
     //     ]);
     // }
 
-    // private $correoService;
+     private $correoService;
 
-    // public function __construct(CorreoService $correoService)
-    // {
-    //     $this->correoService = $correoService;
-    // }
+     public function __construct(CorreoService $correoService)
+     {
+         $this->correoService = $correoService;
+     }
 
 
     /**
@@ -60,6 +60,21 @@ class ProfesorController extends AbstractController
         return $this->json($profesor);
     }
 
+
+     /**
+     * @Route("/enviar-correo", name="enviar_correo")
+     */
+    public function enviarCorreo(): Response
+    {
+        $emailDestino = 'lautyjaime09@gmail.com'; // Cambia esto a la dirección de correo a la que deseas enviar el mensaje
+        $nombreProfesor = 'Nombre del Profesor'; // Cambia esto al nombre del profesor
+        $password = 'contraseña123'; // Cambia esto a la contraseña que deseas enviar
+
+        $this->correoService->enviarCorreoCreacionProfesor($emailDestino, $nombreProfesor, $password);
+
+        return new Response('Correo enviado a ' . $emailDestino);
+    }
+
     /**
      * @Route("/profesorr", name="app_alta_profesorr", methods={"POST"})
      */
@@ -81,7 +96,7 @@ class ProfesorController extends AbstractController
         $profesor->setEmail($email);
 
         $contrasenaAleatoria = $this->generarContrasenaAleatoria();
-        $usuario->setPassword($contrasenaAleatoria);
+        $usuario->setPassword("1234");
 
         $usuario->setUsername($profesor->getEmail()); // cambiar método desde el profesor
         $usuario->setProfesor($profesor); // Idem
