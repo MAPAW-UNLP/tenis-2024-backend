@@ -30,12 +30,12 @@ class ProfesorController extends AbstractController
     //     ]);
     // }
 
-     private $correoService;
+    // private $correoService;
 
-     public function __construct(CorreoService $correoService)
-     {
-         $this->correoService = $correoService;
-     }
+    // public function __construct(CorreoService $correoService)
+    // {
+    //     $this->correoService = $correoService;
+    // }
 
 
     /**
@@ -60,23 +60,8 @@ class ProfesorController extends AbstractController
         return $this->json($profesor);
     }
 
-
-     /**
-     * @Route("/enviar-correo", name="enviar_correo")
-     */
-    public function enviarCorreo(): Response
-    {
-        $emailDestino = 'lautyjaime09@gmail.com'; // Cambia esto a la dirección de correo a la que deseas enviar el mensaje
-        $nombreProfesor = 'Nombre del Profesor'; // Cambia esto al nombre del profesor
-        $password = 'contraseña123'; // Cambia esto a la contraseña que deseas enviar
-
-        $this->correoService->enviarCorreoCreacionProfesor($emailDestino, $nombreProfesor, $password);
-
-        return new Response('Correo enviado a ' . $emailDestino);
-    }
-
     /**
-     * @Route("/profesorr", name="app_alta_profesorr", methods={"POST"})
+     * @Route("/profesorr/add", name="app_alta_profesorr", methods={"POST"})
      */
     public function addProfesor(
         Request $request,
@@ -88,15 +73,25 @@ class ProfesorController extends AbstractController
         $nombre = $data->nombre;
         $telefono = $data->telefono;
         $email = $data->email;
+        $valorHora = $data->valorHora;
+        
+        // Validaciones básicas
+        if ($valorHora <= 0) {
+          return $this->json([
+              'rta' => 'error',
+              'detail' => 'Valor por hora no permitido.',
+          ], Response::HTTP_BAD_REQUEST);
+        }
 
         $profesor = new Profesor();
         $usuario = new Usuario();
         $profesor->setTelefono($telefono);
         $profesor->setNombre($nombre);
         $profesor->setEmail($email);
+        $profesor->setValorHora($valorHora);
 
         $contrasenaAleatoria = $this->generarContrasenaAleatoria();
-        $usuario->setPassword("1234");
+        $usuario->setPassword($contrasenaAleatoria);
 
         $usuario->setUsername($profesor->getEmail()); // cambiar método desde el profesor
         $usuario->setProfesor($profesor); // Idem
@@ -127,7 +122,7 @@ class ProfesorController extends AbstractController
     }
 
     /**
-     * @Route("/profesorr", name="app_mod_persona", methods={"PUT"})
+     * @Route("/profesorr/update", name="app_mod_persona", methods={"PUT"})
      */
     public function modProfesor(Request $request, ManagerRegistry $doctrine): Response
     {
@@ -149,7 +144,17 @@ class ProfesorController extends AbstractController
                 if (isset($data->email)) {
                     $profesor->setEmail($data->email);
                 }
-
+                if (isset($data->valorHora)) {
+                    // Verificar que el valorHora sea mayor a 0
+                    if ($data->valorHora > 0) {
+                        $profesor->setValorHora($data->valorHora);
+                    } else {
+                        return $this->json([
+                            'rta' => 'error',
+                            'detail' => 'El valorHora debe ser mayor a 0',
+                        ], Response::HTTP_BAD_REQUEST);
+                    }
+                }
                 $em->persist($profesor);
                 $em->flush();
 
