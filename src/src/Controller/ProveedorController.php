@@ -86,7 +86,7 @@ class ProveedorController extends AbstractController {
         return $this->json([
             'message' => 'No se ha encontrado el proveedor.',
         ])->setStatusCode(404);
-      
+    }
       
     /*
      * @Route("/proveedor/{id}", name="app_baja_proveedor", methods={"DELETE"})
