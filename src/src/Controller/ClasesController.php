@@ -71,7 +71,7 @@ class ClasesController extends AbstractController
         $idTipoClase = $data->id ?? null;
         $importeClase = $data->importe ?? null;
 
-        if ($idTipoClase != null && $importeClase > 0 && $importeClase < 10000) {
+        if ($idTipoClase != null && $importeClase > 0 && $importeClase < 100000) {
             $em = $doctrine->getManager();
             $clase = $em->getRepository(Clases::class)->find($idTipoClase);
 
