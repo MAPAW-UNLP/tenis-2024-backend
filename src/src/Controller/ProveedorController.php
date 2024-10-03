@@ -15,8 +15,7 @@ use App\Repository\ProveedorRepository;
 /**
  * @Route(path="/api")
  */
-class ProveedorController extends AbstractController
-{
+class ProveedorController extends AbstractController {
     /**
      * @Route("/proveedor", name="app_get_proveedores", methods={"GET"})
      */
