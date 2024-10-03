@@ -10,7 +10,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\ProveedorRepository;
 
 /**
  * @Route(path="/api")
