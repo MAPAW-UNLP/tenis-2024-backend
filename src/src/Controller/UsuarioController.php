@@ -56,10 +56,15 @@ class UsuarioController extends AbstractController
         } else {
 
             $cs->procesamientoInicial();
+            $usuarios = $this->getDoctrine()->getRepository( Usuario::class )->findAll();
 
             $userDB = array(
                 "rta" => "ok",
-                "detail"=> $userDB->getId()
+                "detail" => [
+                    "id" => $userDB->getId(),
+                    "roles" => $userDB->getRoles(),
+                    "rolPorDefecto" => $userDB->getRolPorDefecto()
+                ]
             );
 
         }

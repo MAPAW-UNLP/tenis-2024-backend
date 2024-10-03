@@ -36,6 +36,12 @@ class Alumno
     private $fechaNac;
 
     /**
+     * @ORM\OneToOne(targetEntity="Usuario", cascade={"persist"}, inversedBy="alumno")
+     * @ORM\JoinColumn(name="id", referencedColumnName="id")
+     */
+    private $usuario;
+
+    /**
      * @ORM\OneToMany(targetEntity="Cobro", mappedBy="alumno")
     */
     /** @Ignore() */
@@ -102,6 +108,19 @@ class Alumno
             $this->cobros[] = $cobro;
             // $cobro->setAlumno($this);
         // }
+
+        return $this;
+    }
+
+    /** @Ignore() */
+    public function getUsuario(): ?Usuario
+    {
+        return $this->usuario;
+    }
+
+    public function setUsuario(?Usuario $usuario): self
+    {
+        $this->usuario = $usuario;
 
         return $this;
     }

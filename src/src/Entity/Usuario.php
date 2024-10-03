@@ -54,9 +54,15 @@ class Usuario
     private $administrador;
 
     /**
+     * @Groups("usuario")
+     * @ORM\OneToOne(targetEntity="Alumno", mappedBy="usuario")
+     */
+    private $alumno;
+
+    /**
      * @ORM\Column(type="string", length=30)
      */
-    private $rol;
+    private $rolPorDefecto;
 
     public function getId(): ?int
     {
@@ -130,17 +136,48 @@ class Usuario
         $this->administrador = $administrador;
     }
 
-    public function getRol(): ?string
+    public function getAlumno(): ?Alumno
     {
-        return $this->rol;
+        return $this->alumno;
     }
 
-    public function setRol(string $rol): self
+    public function setAlumno(?Alumno $alumno): void
     {
-        $this->rol = $rol;
+        $this->alumno = $alumno;
+    }
+
+    public function getRolPorDefecto(): ?string
+    {
+        return $this->rolPorDefecto;
+    }
+
+    public function setRolPorDefecto(?string $rolPorDefecto): self
+    {
+        $this->rolPorDefecto = $rolPorDefecto;
 
         return $this;
     }
+
+    public function getRoles(): array
+    {
+        $roles = [];
+
+        if ($this->profesor) {
+            $roles[] = "Profesor";
+        }
+
+        if ($this->alumno) {
+            $roles[] = "Alumno";
+        }
+
+        if ($this->administrador) {
+            $roles[] = "Administrador";
+        }
+
+        return $roles;
+    }
+
+
 
 
 }
