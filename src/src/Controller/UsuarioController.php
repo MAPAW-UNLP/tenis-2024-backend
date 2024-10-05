@@ -56,7 +56,6 @@ class UsuarioController extends AbstractController
         } else {
 
             $cs->procesamientoInicial();
-            $usuarios = $this->getDoctrine()->getRepository( Usuario::class )->findAll();
 
             $userDB = array(
                 "rta" => "ok",
@@ -72,4 +71,43 @@ class UsuarioController extends AbstractController
         return $this->json(($userDB));
     }
 
+    /**
+     * @Route("/usuario", name="app_mod_usuario", methods={"PUT"})
+     */
+    public function modUsuario(Request $request, ManagerRegistry $doctrine): Response {
+        $data = json_decode($request->getContent());
+        $usuarioId = $data->id;
+        $resp = array();
+
+        if ($usuarioId != null) {
+            $em = $doctrine->getManager();
+            $usuario = $em->getRepository(Usuario::class)->findOneById($usuarioId);
+
+            if ($usuario != null) {
+                if (isset($data->username)) {
+                    $usuario->setUsername($data->username);
+                }
+                if (isset($data->password)) {
+                    $usuario->setPassword($data->password);
+                }
+                if (isset($data->rolPorDefecto)) {
+                    $usuario->setRolPorDefecto($data->rolPorDefecto);
+                }
+
+                $em->persist($usuario);
+                $em->flush();
+
+                $resp['rta'] = "ok";
+                $resp['detail'] = "Usuario modificado correctamente";
+            } else {
+                $resp['rta'] = "error";
+                $resp['detail'] = "No existe el usuario";
+            }
+        } else {
+            $resp['rta'] = "error";
+            $resp['detail'] = "Debe proveer un id";
+        }
+
+        return $this->json($resp);
+}
 }

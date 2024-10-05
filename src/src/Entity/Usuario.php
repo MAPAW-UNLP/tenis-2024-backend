@@ -153,7 +153,9 @@ class Usuario
 
     public function setRolPorDefecto(?string $rolPorDefecto): self
     {
-        $this->rolPorDefecto = $rolPorDefecto;
+        if (in_array($rolPorDefecto, $this->getRoles())) {
+            $this->rolPorDefecto = $rolPorDefecto;
+        }
 
         return $this;
     }
