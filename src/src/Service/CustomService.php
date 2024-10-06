@@ -16,6 +16,7 @@ use App\Entity\Reserva;
 use App\Entity\Usuario;
 use App\Entity\Cobro;
 use App\Entity\Profesor;
+use App\Service\DateTimeFormatterService;
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Validator\Constraints\Date;
@@ -27,57 +28,54 @@ class CustomService
     private $doctrine;
     private $estadosArr = ['ASIGNADO', 'CANCELADO', 'CONSUMIDO'];
     private $em;
+    private $formatter;
 
     public function __construct(ManagerRegistry $doctrine)
     {
 
         $this->doctrine = $doctrine;
         $this->em = $this->doctrine->getManager();
+        $formatter = new DateTimeFormatterService();
     }
 
 
     public function reservaFromObject(Reserva $reserva)
     {
-
-        // dd($reserva);
-
         $canchaNombre = $this->em->getRepository(Cancha::class)->findOneById($reserva->getCanchaId())->getNombre();
 
-
         $grupo = [];
-        $titularReservaObj = null;
+        $personaTitular = null;
+        $personaRepository = $this->em->getRepository(Persona::class);
 
         if ($reserva->getPersonaId() != null && $reserva->getPersonaId() != 0) {
             // es clase
 
-            $titularReservaObj = $this->getPersonaByPersonaId($reserva->getPersonaId());
+            $personaTitular = $personaRepository->findOneById($reserva->getPersonaId())->toArrayAsociativo();
 
-
-            $grupoPersonasId = $this->em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reserva->getId());
+            $grupoPersonasId = $this->em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reserva->getId());
 
             if (count($grupoPersonasId) > 0) {
-
-                foreach ($grupoPersonasId as $itemGrupo) {
-
-                    $personaObj = $this->getPersonaByPersonaId($itemGrupo->getPersonaId());
-                    array_push($grupo, $personaObj);
+                foreach ($grupoPersonasId as $persona) {
+                    $miembro = $personaRepository->findOneById($persona->getPersonaId())->toArrayAsociativo();
+                    array_push($grupo, $miembro);
                 }
             }
         } else { //es alquiler
-
-            $titularReservaObj = $this->getClienteByReservaId($reserva->getId());
+            $personaTitular = $this->em->getRepository(Alquiler::class)->findAlquilerByReservaId($reserva->getId());
+            if($personaTitular != null){
+                $personaTitular = $personaTitular->getCliente();
+            }
         }
-
 
         $reservaObj = array(
             "reservaId" => $reserva->getId(),
             "canchaId" => $reserva->getCanchaid(),
             "canchaNombre" => $canchaNombre,
-            "fecha" => $this->getFormattedDate($reserva->getFecha()),
-            "horaIni" => $this->getFormattedTime($reserva->getHoraIni()),
-            "horaFin" => $this->getFormattedTime($reserva->getHoraFin()),
+            "fecha" => $this->formatter->getFormattedDate($reserva->getFecha()),
+            "horaIni" => $this->formatter->getFormattedTime($reserva->getHoraIni()),
+            "horaFin" => $this->formatter->getFormattedTime($reserva->getHoraFin()),
             "profesorId" => $reserva->getPersonaId(),
-            "titular" => $titularReservaObj,
+            "titular" => $personaTitular,
             "replica" => $reserva->isReplica(),
             "estado" => $this->estadosArr[$reserva->getEstadoId()],
             "tipo" => $reserva->getIdTipoClase() != null ? $this->getInfoTipoClase($reserva->getIdTipoClase())[0] : 'ALQUILER',
@@ -88,7 +86,7 @@ class CustomService
 
         return $reservaObj;
     }
-
+    /*no lo toco porque otro grupo tiene como tarea hacer el ABM de tipos de clase*/
     public function getInfoTipoClase($idTipoClase)
     {
         $clase = $this->em->getRepository(Clases::class)->findOneById($idTipoClase);
@@ -96,54 +94,12 @@ class CustomService
         // dd($clase);
         return array($clase->getTipo(), $clase->getImporte());
     }
-
-    public function getFormattedTime(DateTime $time)
-    {
-
-        return $time->format('H:i');
-    }
-
+    /**
+     * @deprecated Este método no debe usarse y debería eliminarse. Usa `DateTimeFormatterService->getFormattedDate()` en su lugar.
+     */
     public function getFormattedDate(DateTime $fecha)
     {
-
         return $fecha->format('Y-m-d');
-    }
-
-    public function getPersonaByPersonaId($personaId)
-    {
-
-        $persona = $this->em->getRepository(Persona::class)->findOneById($personaId);
-        // dd($persona);
-        $personaObj = array(
-            "id" => $persona->getId(),
-            "nombre" => $persona->getNombre(),
-            // "apellido" => $persona->getApellido(),
-            "telefono" => $persona->getTelefono(),
-            // "fechanac" => $persona->getFechaNac() != null ? $this->getFormattedDate($persona->getFechaNac()) : null,
-            "esalumno" => $persona->isEsAlumno(),
-            "visible" => $persona->isVisible(),
-        );
-
-        return $personaObj;
-    }
-
-    public function getClienteByReservaId($reservaId)
-    {
-
-        $cliente = $this->em->getRepository(Alquiler::class)->findAlquilerByReservaId($reservaId);
-
-        if ($cliente != null) {
-
-            $clienteObj = array(
-                "nombre" => $cliente->getNombre(),
-                // "apellido" => $cliente->getApellido(),
-                "telefono" => $cliente->getTelefono(),
-            );
-            return $clienteObj;
-        } else {
-            return null;
-        }
-        // dd($cliente, $clienteObj);
     }
 
     public function getLastReservaId()
@@ -155,22 +111,6 @@ class CustomService
         return $id[0]->getId();
     }
 
-    public function formatearAlumno($alumno)
-    {
-
-        $fechaNac = $alumno->getFechaNac() ? $this->getFormattedDate($alumno->getFechaNac()) : '';
-
-        $alumnoFormateado = array(
-            "id"    => $alumno->getId(),
-            "nombre"    => $alumno->getNombre(),
-            "telefono"  => $alumno->getTelefono(),
-            "fechanac"  => $fechaNac,
-            "saldo"     => 0,
-        );
-
-        return $alumnoFormateado;
-    }
-
     public function replicarReservaNueva($reservaId)
     {
 
@@ -180,7 +120,7 @@ class CustomService
             return;
         }
 
-        $grupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reservaId);
+        $grupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
 
         $fechaReserva = $clase->getFecha();
         $fecha = clone $clase->getFecha();
@@ -239,120 +179,28 @@ class CustomService
         $this->em->flush();
     }
 
-    public function getIdCanchaDisponible($claseOrig, $fecha)
-    {
+    /**
+    * @deprecated Este método no debe usarse y debería eliminarse. Usa el método de CanchaRepository `getIdCanchaDisponible()` en su lugar.
+    */
+    public function getIdCanchaDisponible($reserva, $fecha) 
+    { // devolver id de la cancha disponible, preferentemente la original (si no hay ninguna, retorna 0)
 
-        // devolver id de la cancha disponible, preferentemente la original
-        // devolver 0 si no hay turno disponible en ninguna cancha
+        $canchaRepository = $this->em->getRepository(Cancha::class);
+        $canchaPreferidaId = $reserva->getCanchaId();
 
-
-        $clase = clone $claseOrig;
-        $clase->setFecha($fecha);
-
-        $canchaPreferida = $this->em->getRepository(Cancha::class)->findOneById($clase->getCanchaId());
-        $canchas =  $this->em->getRepository(Cancha::class)->findAll();
-
-
-        if ($this->isCanchaDisponibleEnTurno($canchaPreferida->getId(), $clase)) {
-
-            // dd("cancha original disponible", $clase->getCanchaId(), $clase, $fecha); die; // TODO: quitar
-
-            return $clase->getCanchaId();
-        } else {
-
-            foreach ($canchas as $cancha) {
-
-                if ($cancha->getId() == $canchaPreferida->getId()) {
-                    continue;
-                }
-
-                if ($this->isCanchaDisponibleEnTurno($cancha->getId(), $clase)) {
-                    // dd("cancha alternativa disponible",  $cancha->getId(), $clase, $fecha); die; // TODO: quitar
-
-                    return $cancha->getId();
-                }
-            }
-
-            // dd("no hay cancha disponible",  $cancha->getId(), $clase, $fecha, ); die; // TODO: quitar
-
-            return 0; // si llego aca es que no hay cancha disponible
+        if ($canchaRepository->isCanchaDisponibleEnTurno($canchaPreferidaId, $fecha, $reserva->getHoraIni(), $reserva->getHoraFin())) {
+            return $canchaPreferidaId->getCanchaId();
         }
 
+        $canchasDisponibles = $canchaRepository->canchasDisponiblesEnFechaYTuno($fecha, $reserva->getHoraIni(), $reserva->getHoraFin());
 
-
-        // dd($canchaPreferida,$canchas);
-
-
-
-    }
-
-    public function isCanchaDisponibleEnTurno($id, $clase)
-    {
-
-
-
-        $reservasEnCanchaYFecha = $this->em->getRepository(Reserva::class)->findReservasBycanchaIdAndDate($id, $clase->getFecha());
-        $disponible = true;
-
-        $claseHoraIni = clone $clase->getHoraIni();
-        $claseHoraIni->setDate(2000, 01, 01);
-        $claseHoraFin = clone $clase->getHoraFin();
-        $claseHoraFin->setDate(2000, 01, 01);
-
-        // dd( $clase->getHoraFin(),  $clase->getHoraIni());
-
-        foreach ($reservasEnCanchaYFecha as $reserva) {
-
-            $reservaHoraIni = clone $reserva->getHoraIni();
-            $reservaHoraIni->setDate(2000, 01, 01);
-            $reservaHoraFin =  clone $reserva->getHoraFin();
-            $reservaHoraFin->setDate(2000, 01, 01);
-
-            // dd ($reservaHoraIni, $reservaHoraFin , $claseHoraIni, $claseHoraFin, $reservaHoraIni > $claseHoraIni, $reservaHoraIni >= $claseHoraIni);die;
-
-
-            if (!($claseHoraFin <= $reservaHoraIni) && !($claseHoraIni >= $reservaHoraFin)) {
-                $disponible = false;
-                break;
+        // Buscar la próxima cancha disponible que no sea la preferida, es mas eficiente que un array_filter ya que no genera otro array
+        foreach ($canchasDisponibles as $cancha) {
+            if ($cancha->getId() !== $canchaPreferidaId) {
+                return $cancha->getId(); // Devolver el ID de la primera cancha que no es la preferida
             }
         }
-
-
-        return $disponible;
-    }
-
-    public function registrarPago($motivo, $monto, $descripcion, $fecha)
-    {
-
-        $pago = new Pagos();
-        $pago -> setMonto($monto);
-        $pago -> setMotivo($motivo);
-        $pago -> setDescripcion($descripcion);
-        $fechaPago = isset($fecha) ? $fecha : new Date();
-        $pago->setFecha($fechaPago);
-        $pago->setHora(new DateTime());
-
-        $this->em->persist($pago);
-        $this->em->flush();
-    }
-    
-    public function registrarPagoProfesor($idProfesor, $descripcion, $motivo, $monto, $fecha)
-    {
-        $profesor = $this->em->getRepository(Profesor::class)->find($idProfesor); 
-
-        $pago = new Pagos();
-        $profesor->addPago($pago);
-        $pago->setProfesor($profesor)->setMonto($monto);
-        
-        $pago->setMotivo($motivo);
-        $pago->setDescripcion($descripcion);
-        $fechaPago = isset($fecha) ? $fecha : new Date();
-        $pago->setFecha($fechaPago);
-        $pago->setHora(new DateTime());
-
-        $this->em->persist($pago);
-        $this->em->persist($profesor);
-        $this->em->flush();
+        return 0;
     }
 
     public function registrarCobro($concepto, $monto, $descripcion, $fecha)
@@ -403,7 +251,7 @@ class CustomService
             $reservas =  $this->em->getRepository(Reserva::class)->findReservasBetweenDates($fechaDesde, $fechaHasta);
             foreach ($reservas as $reserva) {
 
-                $idPersonasGrupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reserva->getId());
+                $idPersonasGrupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reserva->getId());
 
                 foreach ($idPersonasGrupo as $personaId) {
 
@@ -448,7 +296,7 @@ class CustomService
 
         $clase = $this->em->getRepository(Reserva::class)->findOneById($reservaId);
 
-        $grupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reservaId);
+        $grupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
 
         $fecha = clone $clase->getFecha();
 

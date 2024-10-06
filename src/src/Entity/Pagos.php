@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\PagosRepository;
 use Doctrine\ORM\Mapping as ORM;
+use DateTime;
 
 /**
  * @ORM\Entity(repositoryClass=PagosRepository::class)
@@ -63,7 +64,15 @@ class Pagos
      */
     private $cantidad;
 
-
+    public function __construct($motivo = null, $monto = 0, $descripcion = '', $fecha = null) {
+        $this->motivo = $motivo;
+        $this->monto = $monto;
+        $this->descripcion = $descripcion;
+        $this->fecha = $fecha ?: new DateTime(); // Usar la fecha actual si no se proporciona
+        $this->hora = new DateTime(); // Hora actual
+    }
+    /*$this->em->persist($pago);
+    $this->em->flush();*/
     public function getId(): ?int
     {
         return $this->id;
