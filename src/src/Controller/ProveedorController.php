@@ -67,7 +67,7 @@ class ProveedorController extends AbstractController {
         return $this->json(($resp));
     }
 
-    /*
+    /**
     * @Route("/proveedor/{id}", name="app_modificar_proveedor", methods={"PUT"})
     */
     public function updateProveedor(Request $request, $id, ProveedorRepository $proveedorRepository): Response {
@@ -97,7 +97,7 @@ class ProveedorController extends AbstractController {
     }
 
       
-    /*
+    /**
      * @Route("/proveedor/{id}", name="app_baja_proveedor", methods={"DELETE"})
      */
     public function deleteProveedor($id, ProveedorRepository $proveedorRepository): Response
