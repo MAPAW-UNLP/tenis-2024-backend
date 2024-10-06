@@ -165,15 +165,15 @@ class Usuario
         $roles = [];
 
         if ($this->profesor) {
-            $roles[] = "Profesor";
+            $roles[] = "ROLE_PROFESOR";
         }
 
         if ($this->alumno) {
-            $roles[] = "Alumno";
+            $roles[] = "ROLE_ALUMNO";
         }
 
         if ($this->administrador) {
-            $roles[] = "Administrador";
+            $roles[] = "ROLE_ADMIN";
         }
 
         return $roles;

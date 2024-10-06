@@ -71,10 +71,12 @@ class UsuarioController extends AbstractController
         return $this->json(($userDB));
     }
 
+    
+
     /**
-     * @Route("/usuario", name="app_mod_usuario", methods={"PUT"})
+     * @Route("/usuario", name="change_rolPorDefecto", methods={"PUT"})
      */
-    public function modUsuario(Request $request, ManagerRegistry $doctrine): Response {
+    public function cambiarRolPorDefecto(Request $request, ManagerRegistry $doctrine): Response {
         $data = json_decode($request->getContent());
         $usuarioId = $data->id;
         $resp = array();
@@ -84,30 +86,38 @@ class UsuarioController extends AbstractController
             $usuario = $em->getRepository(Usuario::class)->findOneById($usuarioId);
 
             if ($usuario != null) {
-                if (isset($data->username)) {
-                    $usuario->setUsername($data->username);
-                }
-                if (isset($data->password)) {
-                    $usuario->setPassword($data->password);
-                }
                 if (isset($data->rolPorDefecto)) {
-                    $usuario->setRolPorDefecto($data->rolPorDefecto);
+                    if (in_array($data->rolPorDefecto, $usuario->getRoles())) {
+                        if ($data->rolPorDefecto != $usuario->getRolPorDefecto()) {
+                            $usuario->setRolPorDefecto($data->rolPorDefecto);
+                            
+                            $em->persist($usuario);
+                            $em->flush();
+                            
+                            $resp['rta'] = "ok";
+                            $resp['detail'] = "Rol por defecto actualizado";
+                        }
+                        else{
+                            $resp['rta'] = "error";
+                            $resp['detail'] = "El rol ya esta seleccionado como defecto";
+                        }
+                    }
+                    else{
+                        $resp['rta'] = "error";
+                        $resp['detail'] = "No se pudo asignar el rol";
+                    }
+                } 
+                else {
+                    $resp['rta'] = "error";
+                    $resp['detail'] = "No existe el usuario";
                 }
-
-                $em->persist($usuario);
-                $em->flush();
-
-                $resp['rta'] = "ok";
-                $resp['detail'] = "Usuario modificado correctamente";
-            } else {
-                $resp['rta'] = "error";
-                $resp['detail'] = "No existe el usuario";
-            }
-        } else {
+            } 
+        else {
             $resp['rta'] = "error";
             $resp['detail'] = "Debe proveer un id";
         }
 
+        }
         return $this->json($resp);
-}
+    }
 }

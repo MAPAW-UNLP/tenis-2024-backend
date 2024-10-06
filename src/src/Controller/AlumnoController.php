@@ -45,40 +45,46 @@ class AlumnoController extends AbstractController
      * @Route("/alumno", name="app_alta_alumno", methods={"POST"})
     */
     public function addAlumno(Request $request, ManagerRegistry $doctrine,
-     EntityManagerInterface $entityManager): Response
-    {
+    EntityManagerInterface $entityManager): Response
+   {
 
-        $data = json_decode( $request->getContent());
-        $nombre = $data->nombre;
-        $telefono = $data->telefono;
-        $fecha_nac = isset($data->fechaNac) &&  strlen($data->fechaNac) > 0 ? new DateTime($data->fechaNac): null;
+       $data = json_decode( $request->getContent());
+       $nombre = $data->nombre;
+       $telefono = $data->telefono;
+       $fecha_nac = isset($data->fechaNac) &&  strlen($data->fechaNac) > 0 ? new DateTime($data->fechaNac): null;
 
-        $alumno = new Alumno();
-        $alumno->setNombre($nombre)->setTelefono($telefono);
-        $alumno -> setFechaNac($fecha_nac);
+       $alumno = new Alumno();
+       $usuario = new Usuario();
+       $alumno->setNombre($nombre)->setTelefono($telefono);
+       $alumno -> setFechaNac($fecha_nac);
 
-        $em = $doctrine->getManager();
-        $em->persist($alumno);
-        $em->flush();
-      
-        if ($alumno->getId() > 0){
+       $usuario->setUsername($alumno->getNombre() + $alumno->getTelefono()); // cambiar método desde el alumno
+       $usuario->setAlumno($alumno); // Idem
+       $usuario->setRolPorDefecto('ROLE_ALUMNO'); // seteo el nombre del rol, para podes acceder a las rutas
+       $alumno->setUsuario($usuario);
 
-            $resp['rta'] =  "ok";
-            $resp['detail'] = "Alumno dado de alta exitosamente.";
-            
-            // Persiste las entidades en la base de datos
-            $entityManager->persist($alumno);
-            // Aplico los cambios en la base de datos
-            $entityManager->flush();
+       $em = $doctrine->getManager();
+       $em->persist($alumno);
+       $em->flush();
+     
+       if ($alumno->getId() > 0){
 
-        } else {
-            $resp['rta'] =  "error";
-            $resp['detail'] = "Se produjo un error en el alta de al alumno.";
-        }
+           $resp['rta'] =  "ok";
+           $resp['detail'] = "Alumno dado de alta exitosamente.";
+           
+           // Persiste las entidades en la base de datos
+           $entityManager->persist($alumno);
+           $entityManager->persist($usuario);
+           // Aplico los cambios en la base de datos
+           $entityManager->flush();
 
-        return $this->json(($resp));
-    }
+       } else {
+           $resp['rta'] =  "error";
+           $resp['detail'] = "Se produjo un error en el alta de al alumno.";
+       }
 
+       return $this->json(($resp));
+   }
     /**
      * @Route("/alumno", name="app_mod_alumno", methods={"PUT"})
     */
