@@ -59,8 +59,7 @@ class ProveedorController extends AbstractController {
             $resp['detail'] = "Proveedor dado de alta exitosamente.";
             // Persiste las entidades en la base de datos
             $entityManager->persist($proveedor);
-            // Aplico los cambios en la base de datos
-            $entityManager->flush();
+            // Aplico los cambios en la base de datos\
         } else {
             $resp['rta'] = "error";
             $resp['detail'] = "Se produjo un error en el alta de al proveedor.";
@@ -69,23 +68,34 @@ class ProveedorController extends AbstractController {
     }
 
     /*
-     * @Route("/proveedor/{id}", name="app_modificar_proveedor", methods={"PUT"})
-     * 
+    * @Route("/proveedor/{id}", name="app_modificar_proveedor", methods={"PUT"})
     */
-    public function updateProveedor(Request $request,$id, ProveedorRepository $proveedorRepository){
-        $data = json_decode( $request->getContent());
-        $nombre = $data->nombre;
-        $telefono = $data->telefono;
+    public function updateProveedor(Request $request, $id, ProveedorRepository $proveedorRepository): Response {
+      $data = json_decode($request->getContent());
+      $nombre = $data->nombre ?? null;
+      $telefono = $data->telefono ?? null;
 
-        if(null !== $proveedor = $proveedorRepository->findOneById($id)){
-            $proveedor->setNombre($nombre)->setTelefono($telefono);
-            $proveedorRepository->add($proveedor, true);
-            return $this->json($proveedor)->setStatusCode(200);
+      // Buscar proveedor por ID
+      if (null !== $proveedor = $proveedorRepository->find($id)) {
+        if ($nombre !== null) {
+            $proveedor->setNombre($nombre);
         }
-        return $this->json([
-            'message' => 'No se ha encontrado el proveedor.',
-        ])->setStatusCode(404);
+
+        if ($telefono !== null) {
+            $proveedor->setTelefono($telefono);
+        }
+
+        $proveedorRepository->add($proveedor, true);
+
+        return $this->json($proveedor)->setStatusCode(200);
+      }
+
+      // Proveedor no encontrado
+      return $this->json([
+        'message' => 'No se ha encontrado el proveedor.',
+      ])->setStatusCode(404);
     }
+
       
     /*
      * @Route("/proveedor/{id}", name="app_baja_proveedor", methods={"DELETE"})
