@@ -41,7 +41,7 @@ class UsuarioController extends AbstractController
         $pass = $data->password;
         
 
-        $userDB = $this->getDoctrine()->getRepository( Usuario::class )->findOneByUsername($user);
+        $userDB = $this->getDoctrine()->getManager()->getRepository( Usuario::class )->findOneByUsername($user);
        
         if (! isset($userDB)){
             $userDB = array(

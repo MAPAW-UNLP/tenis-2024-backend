@@ -184,6 +184,9 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Reserva[] Returns an array of Reserva objects
+     */
     public function findReservasProfesorSinPagoId($persona_id, $primerDia, $ultimoDia): array
     {
         return $this->createQueryBuilder('u')
@@ -198,6 +201,9 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Reserva[] Returns an array of Reserva objects
+     */
     public function findReservasProfesorConPagoId($persona_id, $primerDia, $ultimoDia): array
     {
         return $this->createQueryBuilder('u')
@@ -212,6 +218,16 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function getLastReservaId(): ?int
+{
+    $record = $this->createQueryBuilder('r')
+        ->orderBy('r.id', 'DESC')
+        ->setMaxResults(1)
+        ->getQuery()
+        ->getOneOrNullResult();
+
+    return $record ? $record->getId() : 0;
+}
 
     /* public function changeEstadoReserva($id, $estado_id): void
     {

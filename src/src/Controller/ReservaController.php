@@ -376,7 +376,7 @@ class ReservaController extends AbstractController
     {
         $profesorId = 1; // TODO: Cambiar por el usuario autenticado del momento
 
-        $reservas = $cs->get_my_reservations($profesorId);
+        $reservas = $this->reservaRepository->findReservasProfesor($profesorId);
 
         $rtaReservas =  array();
         foreach ($reservas as $reserva) {

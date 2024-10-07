@@ -167,26 +167,14 @@ class ProfesorController extends AbstractController
         ReservaRepository $reservaRepository
     ): Response {
         $profesorId = 1;
-
         $fechaInicio = $request->query->get('fechaInicio');
         $fechaFin = $request->query->get('fechaFin');
-
         $primerDia = \DateTime::createFromFormat('Y-m-d', $fechaInicio);
         $ultimoDia = \DateTime::createFromFormat('Y-m-d', $fechaFin);
 
-        $clasesAdeudadas = $reservaRepository->findReservasProfesorSinPagoId($profesorId, $primerDia, $ultimoDia);
-        $cantClases = count($clasesAdeudadas);
-
-        $total = 0;
-        foreach ($clasesAdeudadas as $clase) {
-            $total += $clasesRepository->findOneById($clase->getIdTipoClase())->getImporte();
-        }
-
-        return new JsonResponse([
-            'periodo' => $primerDia->format('d-m-Y') . ' - ' . $ultimoDia->format('d-m-Y'),
-            'cantClases' => $cantClases,
-            'total' => $total,
-        ]);
+        $reservasAdeudadas = $reservaRepository->findReservasProfesorSinPagoId($profesorId, $primerDia, $ultimoDia);
+        
+        return $this->getSaldoProfesorAuxiliar($request,$clasesRepository,$reservasAdeudadas,$primerDia,$ultimoDia);
     }
 
     /**
@@ -198,25 +186,34 @@ class ProfesorController extends AbstractController
         ReservaRepository $reservaRepository
     ): Response {
         $profesorId = 1;
-
         $fechaInicio = $request->query->get('fechaInicio');
         $fechaFin = $request->query->get('fechaFin');
-
         $primerDia = \DateTime::createFromFormat('Y-m-d', $fechaInicio);
         $ultimoDia = \DateTime::createFromFormat('Y-m-d', $fechaFin);
 
-        $clasesAdeudadas = $reservaRepository->findReservasProfesorConPagoId($profesorId, $primerDia, $ultimoDia);
-        $cantClases = count($clasesAdeudadas);
+        $reservasAdeudadas = $reservaRepository->findReservasProfesorConPagoId($profesorId, $primerDia, $ultimoDia);
+        
+        return $this->getSaldoProfesorAuxiliar($request,$clasesRepository,$reservasAdeudadas,$primerDia,$ultimoDia);
+    }
+
+    private function getSaldoProfesorAuxiliar(
+        Request $request,
+        ClasesRepository $clasesRepository,
+        $reservasACobrar,
+        $primerDia,
+        $ultimoDia
+    ): Response {
 
         $total = 0;
-        foreach ($clasesAdeudadas as $clase) {
-            $total += $clasesRepository->findOneById($clase->getIdTipoClase())->getImporte();
+        foreach ($reservasACobrar as $reserva) {
+            $total += $clasesRepository->findOneById($reserva->getIdTipoClase())->getImporte();
         }
 
         return new JsonResponse([
             'periodo' => $primerDia->format('d-m-Y') . ' - ' . $ultimoDia->format('d-m-Y'),
-            'cantClases' => $cantClases,
+            'cantClases' => count($reservasACobrar),
             'total' => $total,
         ]);
     }
+
 }

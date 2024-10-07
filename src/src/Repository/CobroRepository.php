@@ -2,7 +2,10 @@
 
 namespace App\Repository;
 
+use Symfony\Component\Validator\Constraints\Date;
+use DateTime;
 use App\Entity\Cobro;
+use App\Entity\Alumno;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -39,6 +42,31 @@ class CobroRepository extends ServiceEntityRepository
         }
     }
 
+    public function registrarCobro($concepto, $monto, $descripcion, $fecha): Cobro
+    {
+        $cobro = new Cobro();
+        $cobro->setMonto($monto)->setConcepto($concepto)->setDescripcion($descripcion);
+        $fechaCobro = isset($fecha) ? $fecha : new Date();
+        $cobro->setFecha(isset($fecha) ? $fecha : new Date());
+        $cobro->setHora(new DateTime());
+
+        $this->getEntityManager()->persist($cobro);
+        $this->getEntityManager()->flush();
+
+        return $cobro;
+    }
+
+    public function registrarCobroAlumno($idAlumno, $idTipoClase, $concepto, $descripcion,$monto, $fecha)
+    {
+        $alumno = $this->getEntityManager()->getRepository(Alumno::class)->find($idAlumno); 
+
+        $cobro = $this->registrarCobro($concepto, $monto, $descripcion, $fecha);
+        $cobro->setAlumno($alumno);
+        $cobro->setIdTipoClase($idTipoClase);
+        
+        $this->getEntityManager()->persist($cobro);
+        $this->getEntityManager()->flush();
+    }
 //    /**
 //     * @return Cobro[] Returns an array of Cobro objects
 //     */

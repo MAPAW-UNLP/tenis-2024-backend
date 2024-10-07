@@ -35,7 +35,7 @@ class CustomService
 
         $this->doctrine = $doctrine;
         $this->em = $this->doctrine->getManager();
-        $formatter = new DateTimeFormatterService();
+        $this->formatter = new DateTimeFormatterService();
     }
 
 
@@ -102,60 +102,53 @@ class CustomService
         return $fecha->format('Y-m-d');
     }
 
-    public function getLastReservaId()
-    {
-        $id = $this->em->getRepository(Reserva::class)->getLastRecord();
-        if ($id == null) {
-            return 0;
-        }
-        return $id[0]->getId();
-    }
-
     public function replicarReservaNueva($reservaId)
     {
-
         $clase = $this->em->getRepository(Reserva::class)->findOneById($reservaId);
-
+    
         if (!$clase->isReplica()) {
             return;
         }
-
+    
         $grupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
-
-        $fechaReserva = $clase->getFecha();
         $fecha = clone $clase->getFecha();
-
         $nroMesActual = date('m');
-
-        $mesProximo = new DateTime();
-        date_add($mesProximo, date_interval_create_from_date_string("1 month"));
-        $nroMesProximo = $mesProximo->format('m');
-
-
+        $nroMesProximo = (new DateTime('first day of next month'))->format('m');
+    
+        $reservasParaPersistir = [];
+        $itemsGrupoParaPersistir = [];//hasta aca va
+    
         for ($i = 0; $i < 10; $i++) {
-
             date_add($fecha, date_interval_create_from_date_string("7 days"));
-
+    
             $idCancha = $this->getIdCanchaDisponible($clase, $fecha);
-
+            
             if (($fecha->format('m') == $nroMesActual || $fecha->format('m') == $nroMesProximo) && $idCancha > 0) {
-
                 $reservaReplicada = clone $clase;
                 $reservaReplicada->setFecha(clone $fecha);
                 $reservaReplicada->setCanchaId($idCancha);
-                $this->em->persist($reservaReplicada);
-                $this->em->flush();
-
-                $idUltimaReserva = $this->getLastReservaId();
+                $reservasParaPersistir[] = $reservaReplicada;
+    
+                $idUltimaReserva = $this->em->getRepository(Reserva::class)->getLastReservaId();
+    
                 foreach ($grupo as $itemGrupo) {
                     $itemReplicado = clone $itemGrupo;
                     $itemReplicado->setReservaId($idUltimaReserva);
-                    $this->em->persist($itemReplicado);
+                    $itemsGrupoParaPersistir[] = $itemReplicado;
                 }
-                $this->em->flush();
             }
         }
-
+    
+        // Persistir todas las reservas y grupos en un solo flush
+        foreach ($reservasParaPersistir as $reserva) {
+            $this->em->persist($reserva);
+        }
+    
+        foreach ($itemsGrupoParaPersistir as $itemGrupo) {
+            $this->em->persist($itemGrupo);
+        }
+    
+        $this->em->flush();
         $this->guardarOActualizarReplicas($reservaId, $nroMesProximo);
     }
 
@@ -203,6 +196,9 @@ class CustomService
         return 0;
     }
 
+    /**
+     * @deprecated Este método no debe usarse y debería eliminarse. Fue movido a CobroRepository
+     */
     public function registrarCobro($concepto, $monto, $descripcion, $fecha)
     {
 
@@ -216,6 +212,9 @@ class CustomService
         $this->em->flush();
     }
 
+    /**
+     * @deprecated Este método no debe usarse y debería eliminarse. Fue movido a CobroRepository
+     */
     public function registrarCobroAlumno($idAlumno, $idTipoClase, $concepto, $descripcion,$monto, $fecha)
     {
         $alumno = $this->em->getRepository(Alumno::class)->find($idAlumno); 
@@ -275,7 +274,9 @@ class CustomService
     public function procesarReplicas()
     {
 
-        $replicas = $this->em->getRepository(Replicas::class)->findAll();
+        //$replicas = $this->em->getRepository(Replicas::class)->findAll();
+        $fechaActual=new DateTime();
+        $replicas = $this->em->getRepository(Replicas::class)->finAllByLastMonth($fechaActual->format("m"));
 
         foreach ($replicas as $replica) {
 
@@ -285,14 +286,14 @@ class CustomService
 
     public function replicarReservaReplicada($reservaId, $replicadaHastaMes)
     {
-
+        /* pasé esta lógica a una query de ReplicaRepository
         $fechaHoy = new DateTime();
         $mesActual = $fechaHoy->format('m');
 
         if ($mesActual != $replicadaHastaMes) {
             return;
         }
-
+        */
 
         $clase = $this->em->getRepository(Reserva::class)->findOneById($reservaId);
 
@@ -321,7 +322,7 @@ class CustomService
                 $this->em->persist($reservaReplicada);
                 $this->em->flush();
 
-                $idUltimaReserva = $this->getLastReservaId();
+                $idUltimaReserva = $this->em->getRepository(Reserva::class)->getLastReservaId();
                 foreach ($grupo as $itemGrupo) {
                     $itemReplicado = clone $itemGrupo;
                     $itemReplicado->setReservaId($idUltimaReserva);
@@ -346,7 +347,7 @@ class CustomService
 
     public function add_people_to_group($alumnos)
     {
-        $lastReservaId = (int) $this->getLastReservaId();
+        $lastReservaId = $this->em->getRepository(Reserva::class)->getLastReservaId();
 
         foreach ($alumnos as $alumno_id) {
             $grupo_alumno = new Grupo();
@@ -362,19 +363,15 @@ class CustomService
         return $this->em->getRepository(Reserva::class)->findReservasBycanchaIdAndDateAndTime($canchaId, $fechaInicio, $horaIni, $horaFin) == null;
     }
 
-    public function get_my_reservations($profesorId)
-    {
-        return $this->em->getRepository(Reserva::class)->findReservasProfesor($profesorId);
-    }
-
+    /** 
+     * @deprecated Este método no debe usarse y debería eliminarse. BalanzaController ya tiene un método privado idéntico para ello
+    */
     public function totalMontos($collection){
         $total = 0;
         foreach ($collection as $item) {
             $total += $item->getMonto();
         }
         return $total;
-
     }
-
 
 }
