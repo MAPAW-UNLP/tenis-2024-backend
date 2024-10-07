@@ -20,7 +20,7 @@ final class Version20241003161811 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // Actualizar el rol por defecto del usuario 'admin'
-        $this->addSql('UPDATE usuario SET rol_por_defecto = "Administrador" WHERE username = "admin"');
+        $this->addSql('UPDATE usuario SET rol_por_defecto = "ROLE_ADMIN" WHERE username = "admin"');
 
         // Obtener el id del usuario 'admin'
         $this->addSql('SET @userId = (SELECT id FROM usuario WHERE username = "admin")');
