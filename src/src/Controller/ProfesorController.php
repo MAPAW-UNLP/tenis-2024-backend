@@ -219,40 +219,39 @@ class ProfesorController extends AbstractController
             'total' => $total,
         ]);
     }
-
-    /**
- * @Route("/profesor/{id}/clases", name="app_clases_profesor", methods={"GET"})
+ /**
+ * @Route("/clases-profesor", name="app_clases_profesor", methods={"GET"})
  */
-public function getClasesProfesor(Request $request, ReservaRepository $reservaRepository): Response
+public function getClasesPorProfesor(Request $request, ReservaRepository $reservaRepository): Response
 {
-    // Obtener el ID del profesor autenticado
-    $profesorId = $this->getUser()->getId(); // Cambia esto para obtener el ID del profesor autenticado
-    $fecha = $request->query->get('fecha');
+    $personaId = $request->query->get('persona_id'); // ID del profesor
+    $fecha = $request->query->get('fecha'); // Fecha en formato 'Y-m-d'
+    // return $this->json([
+    //     'persona_id' => $personaId,
+    //     'fecha' => $fecha,
+    // ]);
 
-    if (!$fecha) {
-        return $this->json(['message' => 'La fecha es requerida.'], Response::HTTP_BAD_REQUEST);
+    // Validar que la fecha sea válida
+    if (!$fecha || !\DateTime::createFromFormat('Y-m-d', $fecha)) {
+        return $this->json([
+            'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+        ], 400);
     }
 
-    // Validar el formato de la fecha
-    $dateTime = \DateTime::createFromFormat('Y-m-d', $fecha);
-    if (!$dateTime) {
-        return $this->json(['message' => 'Formato de fecha inválido. Debe ser Y-m-d.'], Response::HTTP_BAD_REQUEST);
+    // Obtener las reservas para el profesor en la fecha dada
+    $reservas = $reservaRepository->findReservasPorPersonaIdYFecha($personaId, $fecha);
+
+    if (empty($reservas)) {
+        return $this->json([
+            'message' => 'No se encontraron clases para la fecha indicada.',
+        ], 404);
     }
 
-    // Buscar las clases asignadas al profesor para la fecha dada
-    $clases = $reservaRepository->findClasesByProfesorAndDate($profesorId, $dateTime);
-
-    if (empty($clases)) {
-        return $this->json(['message' => 'No se encontraron clases para el profesor en la fecha dada.'], Response::HTTP_NOT_FOUND);
-    }
-
-    return $this->json($clases);
+    return $this->json([
+        'message' => 'Clases encontradas.',
+        'data' => $reservas,
+    ], 200);
 }
-
-
-
-
-
 
 
 }
