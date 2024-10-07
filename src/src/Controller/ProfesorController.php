@@ -219,4 +219,40 @@ class ProfesorController extends AbstractController
             'total' => $total,
         ]);
     }
+
+    /**
+ * @Route("/profesor/{id}/clases", name="app_clases_profesor", methods={"GET"})
+ */
+public function getClasesProfesor(Request $request, ReservaRepository $reservaRepository): Response
+{
+    // Obtener el ID del profesor autenticado
+    $profesorId = $this->getUser()->getId(); // Cambia esto para obtener el ID del profesor autenticado
+    $fecha = $request->query->get('fecha');
+
+    if (!$fecha) {
+        return $this->json(['message' => 'La fecha es requerida.'], Response::HTTP_BAD_REQUEST);
+    }
+
+    // Validar el formato de la fecha
+    $dateTime = \DateTime::createFromFormat('Y-m-d', $fecha);
+    if (!$dateTime) {
+        return $this->json(['message' => 'Formato de fecha inválido. Debe ser Y-m-d.'], Response::HTTP_BAD_REQUEST);
+    }
+
+    // Buscar las clases asignadas al profesor para la fecha dada
+    $clases = $reservaRepository->findClasesByProfesorAndDate($profesorId, $dateTime);
+
+    if (empty($clases)) {
+        return $this->json(['message' => 'No se encontraron clases para el profesor en la fecha dada.'], Response::HTTP_NOT_FOUND);
+    }
+
+    return $this->json($clases);
+}
+
+
+
+
+
+
+
 }

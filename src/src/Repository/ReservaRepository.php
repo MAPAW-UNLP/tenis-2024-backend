@@ -211,7 +211,18 @@ class ReservaRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    
 
+    public function findClasesByProfesorAndDate($profesorId, \DateTime $fecha)
+{
+    return $this->createQueryBuilder('r')
+        ->where('r.profesorId = :profesorId')
+        ->andWhere('DATE(r.fecha) = :fecha') // Asegúrate de que 'fecha' es el campo correcto
+        ->setParameter('profesorId', $profesorId)
+        ->setParameter('fecha', $fecha->format('Y-m-d'))
+        ->getQuery()
+        ->getResult();
+}
 
     /* public function changeEstadoReserva($id, $estado_id): void
     {
