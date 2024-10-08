@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Reserva;
+use App\Entity\PeriodoAusencia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -215,16 +216,51 @@ class ReservaRepository extends ServiceEntityRepository
  * @extends ServiceEntityRepository<Reserva>
  */
 
- public function findReservasPorPersonaIdYFecha($personaId, $fecha): array
+ public function findReservasPorPersonaIdYFecha($personaId, $fecha): array 
  {
-     return $this->createQueryBuilder('r')
+    //  // Obtener los periodos de ausencia del profesor
+    $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
+          ->isProfesorAusente($personaId,$fecha);
+     
+    if ($ausente) {
+        return array();
+    }
+
+     // Crear la consulta base para las reservas
+     $queryBuilder = $this->createQueryBuilder('r')
          ->andWhere('r.persona_id = :personaId')
          ->setParameter('personaId', $personaId)
          ->andWhere('r.fecha = :fecha')
          ->setParameter('fecha', $fecha)
-         ->getQuery()
-         ->getResult();
- }
+         ->andWhere('r.estado_id = :estadoId')
+         ->setParameter('estadoId', 0);
+         return $queryBuilder->getQuery()->getResult();
+
+         
+    //  Agregar condiciones para filtrar solapamientos
+    //  if ($periodosAusencia) {
+    //     $notInAbsencePeriod = $queryBuilder->expr()->andX();
+        
+    //     foreach ($periodosAusencia as $periodo) {
+    //         // Comprobamos que la fecha no está dentro del periodo de ausencia
+    //         $notInAbsencePeriod->add(
+    //             $queryBuilder->expr()->orX(
+    //                 $queryBuilder->expr()->lt('r.fecha', ':fecha_inicio_'.$periodo->getId()), // Antes de la ausencia
+    //                 $queryBuilder->expr()->gt('r.fecha', ':fecha_fin_'.$periodo->getId())    // Después de la ausencia
+    //             )
+    //         );
+
+    //         // Asignar los parámetros de tiempo de ausencia
+    //         $queryBuilder->setParameter('fecha_inicio_'.$periodo->getId(), $periodo->getFechaIni()->format('Y-m-d'));
+    //         $queryBuilder->setParameter('fecha_fin_'.$periodo->getId(), $periodo->getFechaFin()->format('Y-m-d'));
+    //     }
+        
+    //     // Agregar la condición al query builder
+    //     $queryBuilder->andWhere($notInAbsencePeriod);
+    // }
+
+    // return $queryBuilder->getQuery()->getResult();
+}
  
 
  

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\PeriodoAusencia;
+use Symfony\Component\Validator\Constraints\Date;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -77,6 +78,22 @@ class PeriodoAusenciaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function isProfesorAusente($profesor_id, $fecha): bool
+    {
+        $resultado = $this->createQueryBuilder('periodo')
+            ->andWhere('periodo.profesor_id = :id')
+            ->andWhere(':fecha >= periodo.fecha_ini')
+            ->andWhere(':fecha <= periodo.fecha_fin')
+            ->andWhere('periodo.estado_id = :aprobada')
+            ->setParameter('id', $profesor_id)
+            ->setParameter('fecha', $fecha)
+            ->setParameter('aprobada', 2) //una periodo en 1 es pendiente, un aprobado esta en 2
+            ->getQuery()
+            ->getResult();
+        
+        return !empty($resultado); // Se usa !empty para verificar si hay periodos de ausencia
+    }
+    
     //    /**
     //     * @return PeriodoAusencia[] Returns an array of PeriodoAusencia objects
     //     */

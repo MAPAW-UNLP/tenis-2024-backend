@@ -39,6 +39,15 @@ class ProfesorRepository extends ServiceEntityRepository
         }
     }
 
+    public function findOneById($id): ? Profesor
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.id = :val')
+            ->setParameter('val', $id)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 //    /**
 //     * @return Profesor[] Returns an array of Profesor objects
 //     */

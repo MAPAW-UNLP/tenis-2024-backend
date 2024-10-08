@@ -111,26 +111,17 @@ class ReservaController extends AbstractController
     /**
      * @Route("/reserva", name="app_alta_reserva", methods={"POST"})
      */
-    public function postReserva(
-        Request $request,
-        ManagerRegistry $doctrine,
-        ServiceCustomService $cs
-    ): Response {
-
+    public function postReserva(Request $request,ManagerRegistry $doctrine, ServiceCustomService $cs): Response {
         $parametros = $request->request->all();
-
 
         $clienteParam = array(
             "nombre"    => isset($parametros['nombre']) ? $parametros['nombre'] : null,
             "telefono"    => isset($parametros['telefono']) ? $parametros['telefono'] : null,
         );
 
-        $persona_id = null;
-        if (isset($parametros['persona_id'])) {
-            if ((int) $parametros['persona_id'] > 0) {
-                $persona_id = (int) $parametros['persona_id'];
-            }
-        }
+        //$persona_id = null;
+        $persona_id = isset($parametros['persona_id']) ? (int) $parametros['persona_id'] : null;
+
 
         $reservaParam = array(
             "cancha_id"     =>  $parametros['cancha_id'],

@@ -47,11 +47,12 @@ class CustomService
         $grupo = [];
         $titularReservaObj = null;
 
-        if ($reserva->getPersonaId() != null && $reserva->getPersonaId() != 0) {
-            // es clase
-
-            $titularReservaObj = $this->getPersonaByPersonaId($reserva->getPersonaId());
-
+        if ($reserva->getPersonaId() !== null && $reserva->getPersonaId() != 0) {
+            // Obtener el persona_id desde el objeto Reserva
+            $personaId = $reserva->getPersonaId();
+    
+            // Usar el personaId para buscar la persona correspondiente
+            $titularReservaObj = $this->em->getRepository(Profesor::class)->findOneById($personaId);
 
             $grupoPersonasId = $this->em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reserva->getId());
 
@@ -112,7 +113,7 @@ class CustomService
     public function getPersonaByPersonaId($personaId)
     {
 
-        $persona = $this->em->getRepository(Persona::class)->findOneById($personaId);
+        $persona = $this->em->getRepository(Alumno::class)->findOneById($personaId);
         // dd($persona);
         $personaObj = array(
             "id" => $persona->getId(),
@@ -120,8 +121,8 @@ class CustomService
             // "apellido" => $persona->getApellido(),
             "telefono" => $persona->getTelefono(),
             // "fechanac" => $persona->getFechaNac() != null ? $this->getFormattedDate($persona->getFechaNac()) : null,
-            "esalumno" => $persona->isEsAlumno(),
-            "visible" => $persona->isVisible(),
+            "esalumno" => true,//$persona->isEsAlumno(),
+            "visible" => true//$persona->isVisible(),
         );
 
         return $personaObj;

@@ -33,7 +33,7 @@ class PeriodoAusenciaController extends AbstractController
                 // Pendiente = 1
                 $periodoAusencia->setEstadoId(1);
                 // TODO: cambiar 1 por usuario logueado del momento.
-                $periodoAusencia->setProfesorId(1);
+                $periodoAusencia->setProfesorId(4);
                 $periodoAusencia->setMotivo($data['motivo']);
                 $periodoAusenciaRepository->add($periodoAusencia, true);
 
@@ -63,7 +63,7 @@ class PeriodoAusenciaController extends AbstractController
     public function indexMisPeriodosAusencia(PeriodoAusenciaRepository $periodoAusenciaRepository): Response
     {
         // TODO: Cambiar 1 por usuario logueado del momento.
-        $solicitudesAusencia = $periodoAusenciaRepository->findPeriodoAusenciaByProfesorId(1);
+        $solicitudesAusencia = $periodoAusenciaRepository->findPeriodoAusenciaByProfesorId(3);
         if ($solicitudesAusencia) {
             return $this->json([
                 'message' => 'Se han encontrado solicitudes de ausencia.',
