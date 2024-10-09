@@ -55,9 +55,9 @@ class Usuario
 
     /**
      * @Groups("usuario")
-     * @ORM\OneToOne(targetEntity="Alumno", mappedBy="usuario")
+     * @ORM\OneToOne(targetEntity="Cliente", mappedBy="usuario")
      */
-    private $alumno;
+    private $cliente;
 
     /**
      * @ORM\Column(type="string", length=30)
@@ -136,14 +136,14 @@ class Usuario
         $this->administrador = $administrador;
     }
 
-    public function getAlumno(): ?Alumno
+    public function getCliente(): ?Cliente
     {
-        return $this->alumno;
+        return $this->cliente;
     }
 
-    public function setAlumno(?Alumno $alumno): void
+    public function setCliente(?Cliente $cliente): void
     {
-        $this->alumno = $alumno;
+        $this->cliente = $cliente;
     }
 
     public function getRolPorDefecto(): ?string
@@ -168,8 +168,8 @@ class Usuario
             $roles[] = "ROLE_PROFESOR";
         }
 
-        if ($this->alumno) {
-            $roles[] = "ROLE_ALUMNO";
+        if ($this->cliente) {
+            $roles[] = "ROLE_CLIENTE";
         }
 
         if ($this->administrador) {

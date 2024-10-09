@@ -2,16 +2,16 @@
 
 namespace App\Entity;
 
-use App\Repository\AlumnoRepository;
+use App\Repository\ClienteRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
- * @ORM\Entity(repositoryClass=AlumnoRepository::class)
+ * @ORM\Entity(repositoryClass=ClienteRepository::class)
  */
-class Alumno
+class Cliente
 {
     /**
      * @ORM\Id
@@ -36,13 +36,13 @@ class Alumno
     private $fechaNac;
 
     /**
-     * @ORM\OneToOne(targetEntity="Usuario", cascade={"persist"}, inversedBy="alumno")
+     * @ORM\OneToOne(targetEntity="Usuario", cascade={"persist"}, inversedBy="cliente")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
     private $usuario;
 
     /**
-     * @ORM\OneToMany(targetEntity="Cobro", mappedBy="alumno")
+     * @ORM\OneToMany(targetEntity="Cobro", mappedBy="cliente")
     */
     /** @Ignore() */
     private $cobros;
@@ -106,7 +106,7 @@ class Alumno
 //        if (!$this->cobros->contains($cobro)) {
         // if (!$this->getCobros()->contains($cobro)) {
             $this->cobros[] = $cobro;
-            // $cobro->setAlumno($this);
+            // $cobro->setCliente($this);
         // }
 
         return $this;
