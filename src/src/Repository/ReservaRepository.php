@@ -98,6 +98,20 @@ class ReservaRepository extends ServiceEntityRepository
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
+    public function findProfesorReservasBetweenDates($fecha1, $fecha2, $personaId): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.fecha >= :val1')
+            ->setParameter('val1', $fecha1)
+            ->andWhere('u.fecha <= :val2')
+            ->setParameter('val2', $fecha2)
+            ->andWhere('u.persona_id = :persona_id') // Usa persona_id
+            ->setParameter('persona_id', $personaId)
+            ->getQuery()
+            ->getResult();
+    }
+
+
     public function findReservasBetweenDates($fecha1, $fecha2): array
     {
         return $this->createQueryBuilder('u')

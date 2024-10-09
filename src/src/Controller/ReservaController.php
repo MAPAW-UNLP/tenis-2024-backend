@@ -32,6 +32,7 @@ class ReservaController extends AbstractController
         ServiceCustomService $cs
     ): Response {
         $reservas = $this->getDoctrine()->getRepository(Reserva::class)->findAll();
+        
 
         $rtaReservas =  array();
         foreach ($reservas as $reserva) {

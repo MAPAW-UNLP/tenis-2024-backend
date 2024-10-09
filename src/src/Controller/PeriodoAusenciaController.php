@@ -33,7 +33,7 @@ class PeriodoAusenciaController extends AbstractController
                 // Pendiente = 1
                 $periodoAusencia->setEstadoId(1);
                 // TODO: cambiar 1 por usuario logueado del momento.
-                $periodoAusencia->setProfesorId(4);
+                $periodoAusencia->setProfesorId(2);
                 $periodoAusencia->setMotivo($data['motivo']);
                 $periodoAusenciaRepository->add($periodoAusencia, true);
 
@@ -63,7 +63,7 @@ class PeriodoAusenciaController extends AbstractController
     public function indexMisPeriodosAusencia(PeriodoAusenciaRepository $periodoAusenciaRepository): Response
     {
         // TODO: Cambiar 1 por usuario logueado del momento.
-        $solicitudesAusencia = $periodoAusenciaRepository->findPeriodoAusenciaByProfesorId(3);
+        $solicitudesAusencia = $periodoAusenciaRepository->findPeriodoAusenciaByProfesorId(4);
         if ($solicitudesAusencia) {
             return $this->json([
                 'message' => 'Se han encontrado solicitudes de ausencia.',
@@ -114,7 +114,7 @@ class PeriodoAusenciaController extends AbstractController
 
         if ($periodoAusencia) {
             if ($periodoAusencia[0]->getEstadoId() == 1) {
-                $reservas = $reservaRepository->findReservasBetweenDates($periodoAusencia[0]->getFechaIni(), $periodoAusencia[0]->getFechaFin());
+                $reservas = $reservaRepository->findProfesorReservasBetweenDates($periodoAusencia[0]->getFechaIni(), $periodoAusencia[0]->getFechaFin(), $periodoAusencia[0]->getProfesorId());
                 foreach ($reservas as $reserva) {
                     $reserva->setEstadoId(1);
                     $reservaRepository->edit($reserva, true);
