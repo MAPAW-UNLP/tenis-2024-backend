@@ -61,7 +61,7 @@ class ProfesorController extends AbstractController
     }
 
     /**
-     * @Route("/profesorr", name="app_alta_profesorr", methods={"POST"})
+     * @Route("/profesorr/add", name="app_alta_profesorr", methods={"POST"})
      */
     public function addProfesor(
         Request $request,
@@ -73,12 +73,22 @@ class ProfesorController extends AbstractController
         $nombre = $data->nombre;
         $telefono = $data->telefono;
         $email = $data->email;
+        $valorHora = $data->valorHora;
+        
+        // Validaciones básicas
+        if ($valorHora <= 0) {
+          return $this->json([
+              'rta' => 'error',
+              'detail' => 'Valor por hora no permitido.',
+          ], Response::HTTP_BAD_REQUEST);
+        }
 
         $profesor = new Profesor();
         $usuario = new Usuario();
         $profesor->setTelefono($telefono);
         $profesor->setNombre($nombre);
         $profesor->setEmail($email);
+        $profesor->setValorHora($valorHora);
 
         $contrasenaAleatoria = $this->generarContrasenaAleatoria();
         $usuario->setPassword($contrasenaAleatoria);
@@ -112,7 +122,7 @@ class ProfesorController extends AbstractController
     }
 
     /**
-     * @Route("/profesorr", name="app_mod_persona", methods={"PUT"})
+     * @Route("/profesorr/update", name="app_mod_persona", methods={"PUT"})
      */
     public function modProfesor(Request $request, ManagerRegistry $doctrine): Response
     {
@@ -134,7 +144,17 @@ class ProfesorController extends AbstractController
                 if (isset($data->email)) {
                     $profesor->setEmail($data->email);
                 }
-
+                if (isset($data->valorHora)) {
+                    // Verificar que el valorHora sea mayor a 0
+                    if ($data->valorHora > 0) {
+                        $profesor->setValorHora($data->valorHora);
+                    } else {
+                        return $this->json([
+                            'rta' => 'error',
+                            'detail' => 'El valorHora debe ser mayor a 0',
+                        ], Response::HTTP_BAD_REQUEST);
+                    }
+                }
                 $em->persist($profesor);
                 $em->flush();
 

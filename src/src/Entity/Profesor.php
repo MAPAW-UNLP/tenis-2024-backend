@@ -35,17 +35,21 @@ class Profesor
      */
     private $telefono;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $valorHora;
 
     /**
      * @ORM\OneToOne(targetEntity="Usuario", cascade={"persist"}, inversedBy="profesor")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
 
-     private $usuario;
+    private $usuario;
 
     /**
      * @ORM\OneToMany(targetEntity="Pagos", mappedBy="profesor")
-    */
+     */
     private $pagos;
 
     public function __construct()
@@ -53,7 +57,7 @@ class Profesor
         $this->pagos = new ArrayCollection();
     }
 
-    
+
     public function getId(): ?int
     {
         return $this->id;
@@ -95,6 +99,17 @@ class Profesor
         return $this;
     }
 
+    public function getValorHora(): ?int
+    {
+        return $this->valorHora;
+    }
+
+    public function setValorHora(int $valorHora): ?self
+    {
+        $this->valorHora = $valorHora;
+        return $this;
+    }
+
     /** @Ignore() */
     public function getUsuario(): ?Usuario
     {
@@ -123,5 +138,4 @@ class Profesor
 
         return $this;
     }
-
 }
