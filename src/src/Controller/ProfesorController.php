@@ -215,7 +215,7 @@ class ProfesorController extends AbstractController
             'total' => $total,
         ]);
     }
-<<<<<<< HEAD
+
  /**
  * @Route("/clases-profesor", name="app_clases_profesor", methods={"GET"})
  */
