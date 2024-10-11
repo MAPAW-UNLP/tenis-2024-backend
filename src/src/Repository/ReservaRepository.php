@@ -232,33 +232,40 @@ class ReservaRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    /**
- * @extends ServiceEntityRepository<Reserva>
- */
+
+    public function findReservasPorPersonaIdYFecha($personaId, $fecha): array 
+    {
+        //  // Obtener los periodos de ausencia del profesor
+        $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
+            ->isProfesorAusente($personaId,$fecha);
+        
+        if ($ausente) {
+            return array();
+        }
 
 
- public function findReservasPorPersonaIdYFecha($personaId, $fecha): array 
- {
-    //  // Obtener los periodos de ausencia del profesor
-    $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
-          ->isProfesorAusente($personaId,$fecha);
-     
-    if ($ausente) {
-        return array();
+        // Crear la consulta base para las reservas
+        $queryBuilder = $this->createQueryBuilder('r')
+            ->andWhere('r.persona_id = :personaId')
+            ->setParameter('personaId', $personaId)
+            ->andWhere('r.fecha = :fecha')
+            ->setParameter('fecha', $fecha)
+            ->andWhere('r.estado_id = :estadoId')
+            ->setParameter('estadoId', 0);
+            return $queryBuilder->getQuery()->getResult();
+
     }
 
+    public function getLastReservaId(): ?int
+    {
+        $record = $this->createQueryBuilder('r')
+        ->orderBy('r.id', 'DESC')
+        ->setMaxResults(1)
+        ->getQuery()
+        ->getOneOrNullResult();
 
-     // Crear la consulta base para las reservas
-     $queryBuilder = $this->createQueryBuilder('r')
-         ->andWhere('r.persona_id = :personaId')
-         ->setParameter('personaId', $personaId)
-         ->andWhere('r.fecha = :fecha')
-         ->setParameter('fecha', $fecha)
-         ->andWhere('r.estado_id = :estadoId')
-         ->setParameter('estadoId', 0);
-         return $queryBuilder->getQuery()->getResult();
-
-         
+        return $record ? $record->getId() : 0;
+    }
     //  Agregar condiciones para filtrar solapamientos
     //  if ($periodosAusencia) {
     //     $notInAbsencePeriod = $queryBuilder->expr()->andX();
@@ -282,7 +289,6 @@ class ReservaRepository extends ServiceEntityRepository
     // }
 
     // return $queryBuilder->getQuery()->getResult();
-}
  
 
  
