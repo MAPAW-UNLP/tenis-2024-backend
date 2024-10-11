@@ -199,6 +199,9 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Reserva[] Returns an array of Reserva objects
+     */
     public function findReservasProfesorSinPagoId($persona_id, $primerDia, $ultimoDia): array
     {
         return $this->createQueryBuilder('u')
@@ -213,6 +216,9 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Reserva[] Returns an array of Reserva objects
+     */
     public function findReservasProfesorConPagoId($persona_id, $primerDia, $ultimoDia): array
     {
         return $this->createQueryBuilder('u')
@@ -230,6 +236,7 @@ class ReservaRepository extends ServiceEntityRepository
  * @extends ServiceEntityRepository<Reserva>
  */
 
+
  public function findReservasPorPersonaIdYFecha($personaId, $fecha): array 
  {
     //  // Obtener los periodos de ausencia del profesor
@@ -239,6 +246,7 @@ class ReservaRepository extends ServiceEntityRepository
     if ($ausente) {
         return array();
     }
+
 
      // Crear la consulta base para las reservas
      $queryBuilder = $this->createQueryBuilder('r')

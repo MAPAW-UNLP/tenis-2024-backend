@@ -59,6 +59,15 @@ class ReplicasRepository extends ServiceEntityRepository
        ;
    }
 
+   public function finAllByLastMonth($mesNumerico): array
+   {
+        return $this->createQueryBuilder("rep")
+            ->andWhere("rep.ultimoMes = :mesNumerico")
+            ->setParameter("mesNumerico",$mesNumerico)
+            ->getQuery()
+            ->getResult()
+        ;
+   }
 //    /**
 //     * @return Replicas[] Returns an array of Replicas objects
 //     */

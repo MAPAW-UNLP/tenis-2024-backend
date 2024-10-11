@@ -18,6 +18,7 @@ use App\Service\CustomService as ServiceCustomService;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\ReservaRepository;
 
 /**
  * @Route(path="/api")
@@ -25,6 +26,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ReservaController extends AbstractController
 {
+    //la variable privada y el constructor son nuevos, para aprovechar la inyeccion de dependencias de Synfony
+    private $reservaRepository;
+
+    public function __construct(ReservaRepository $reservaRepository)
+    {
+        $this->reservaRepository = $reservaRepository;
+    }
+
     /**
      * @Route("/reservas", name="app_reservas", methods={"GET"})
      */
@@ -77,7 +86,7 @@ class ReservaController extends AbstractController
                 continue;
             }
 
-            $reservas = $this->getDoctrine()->getRepository(Reserva::class)->findReservasBycanchaIdAndDate($cancha->getId(), $fechaPhp);
+            $reservas = $this->reservaRepository->findReservasBycanchaIdAndDate($cancha->getId(), $fechaPhp);
             // dd($reservas, $cancha->getId(), $fechaPhp);
             $reservasObj = [];
             foreach ($reservas as $reserva) {
@@ -149,11 +158,8 @@ class ReservaController extends AbstractController
             $reservaParam['estado_id']
         );
 
-        $reservaId =  $em->persist($reserva);
-
-
-        $lastReservaId = (int) $cs->getLastReservaId();
-        $idReserva = $lastReservaId + 1;
+        $em->persist($reserva);//el ORM empieza a tracker al objeto
+        $em->flush();//se guarda en la base de datos, por lo que ya tiene un ID
 
         $procesarReplicas = false;
 
@@ -162,7 +168,7 @@ class ReservaController extends AbstractController
             foreach ($ids_grupo as $alumno_id) {
                 if (is_numeric($alumno_id)) {
                     $grupo_alumno = new Grupo();
-                    $grupo_alumno->setReservaId($idReserva);
+                    $grupo_alumno->setReservaId($reserva->getId());
                     $grupo_alumno->setPersonaId($alumno_id);
                     $em->persist($grupo_alumno);
                 }
@@ -173,7 +179,7 @@ class ReservaController extends AbstractController
             $alquiler = new Alquiler();
             $alquiler->setNombre($clienteParam['nombre']);
             $alquiler->setTelefono($clienteParam['telefono']);
-            $alquiler->setReservaId($idReserva);
+            $alquiler->setReservaId($reserva->getId());
             $em->persist($alquiler);
         }
 
@@ -181,7 +187,7 @@ class ReservaController extends AbstractController
         $em->flush();
 
 
-        $cs->replicarReservaNueva($idReserva); //lo hace si esta en true replica
+        $cs->replicarReservaNueva($reserva->getId()); //lo hace si esta en true replica
 
         $resp = array();
 
@@ -362,7 +368,7 @@ class ReservaController extends AbstractController
     {
         $profesorId = 1; // TODO: Cambiar por el usuario autenticado del momento
 
-        $reservas = $cs->get_my_reservations($profesorId);
+        $reservas = $this->reservaRepository->findReservasProfesor($profesorId);
 
         $rtaReservas =  array();
         foreach ($reservas as $reserva) {
@@ -419,7 +425,7 @@ class ReservaController extends AbstractController
 
         $em = $doctrine->getManager();
 
-        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reservaId);
+        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
         // dd($grupoViejo, $ids_grupo);
         foreach ($grupoViejo as $personaGrupoViejo) {
             $em->getRepository(Grupo::class)->remove($personaGrupoViejo);
@@ -459,7 +465,7 @@ class ReservaController extends AbstractController
 
         $em = $doctrine->getManager();
 
-        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reservaId);
+        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
         // dd($grupoViejo, $ids_grupo);
         foreach ($grupoViejo as $personaGrupoViejo) {
             $em->getRepository(Grupo::class)->remove($personaGrupoViejo);
