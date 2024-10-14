@@ -15,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\CorreoService;
+use App\Service\CustomService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
@@ -219,12 +220,12 @@ class ProfesorController extends AbstractController
  /**
  * @Route("/clases-profesor", name="app_clases_profesor", methods={"GET"})
  */
-public function getClasesPorProfesor(Request $request, ReservaRepository $reservaRepository): Response
+public function getClasesPorProfesor(Request $request, ReservaRepository $reservaRepository, CustomService $cs): Response
 {
-    $personaId = $request->query->get('persona_id'); // ID del profesor
+    $profesorId = $request->query->get('profesor_id'); // ID del profesor
     $fecha = $request->query->get('fecha'); // Fecha en formato 'Y-m-d'
-    // return $this->json([
-    //     'persona_id' => $personaId,
+    //return $this->json([
+    //     'persona_id' => $profesorId,
     //     'fecha' => $fecha,
     // ]);
 
@@ -236,7 +237,11 @@ public function getClasesPorProfesor(Request $request, ReservaRepository $reserv
     }
 
     // Obtener las reservas para el profesor en la fecha dada
-    $reservas = $reservaRepository->findReservasPorPersonaIdYFecha($personaId, $fecha);
+    $reservas = $reservaRepository->findReservasPorPersonaIdYFecha($profesorId, $fecha);
+    $reservasFormateadas = [];
+    foreach($reservas as $reserva){
+        array_push($reservasFormateadas,$cs->reservaFromObject($reserva));
+    }
 
     if (empty($reservas)) {
         return $this->json([
@@ -246,7 +251,7 @@ public function getClasesPorProfesor(Request $request, ReservaRepository $reserv
 
     return $this->json([
         'message' => 'Clases encontradas.',
-        'data' => $reservas,
+        'data' => $reservasFormateadas,
     ], 200);
 }
 

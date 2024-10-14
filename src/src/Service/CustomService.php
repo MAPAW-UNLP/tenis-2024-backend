@@ -45,22 +45,21 @@ class CustomService
 
         $grupo = [];
         $personaTitular = null;
-        $personaRepository = $this->em->getRepository(Persona::class);
+        $alumnoRepository = $this->em->getRepository(Alumno::class);
 
 
         if ($reserva->getPersonaId() !== null && $reserva->getPersonaId() != 0) {
             // Obtener el persona_id desde el objeto Reserva
-            $personaId = $reserva->getPersonaId();
+            $profesorId = $reserva->getPersonaId();
     
             // Usar el personaId para buscar la persona correspondiente
-            $titularReservaObj = $this->em->getRepository(Profesor::class)->findOneById($personaId);
+            $personaTitular = $this->em->getRepository(Profesor::class)->findOneById($profesorId);
 
-            $grupoPersonasId = $this->em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reserva->getId());
-
+            $grupoPersonasId = $this->em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reserva->getId());
 
             if (count($grupoPersonasId) > 0) {
                 foreach ($grupoPersonasId as $persona) {
-                    $miembro = $personaRepository->findOneById($persona->getPersonaId())->toArrayAsociativo();
+                    $miembro = $alumnoRepository->findOneById($persona->getPersonaId())->toArrayAsociativo();
                     array_push($grupo, $miembro);
                 }
             }

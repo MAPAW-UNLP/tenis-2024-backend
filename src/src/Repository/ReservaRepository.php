@@ -252,7 +252,8 @@ class ReservaRepository extends ServiceEntityRepository
             ->setParameter('fecha', $fecha)
             ->andWhere('r.estado_id = :estadoId')
             ->setParameter('estadoId', 0);
-            return $queryBuilder->getQuery()->getResult();
+            
+        return $queryBuilder->getQuery()->getResult();
 
     }
 
