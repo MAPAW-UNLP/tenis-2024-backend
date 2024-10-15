@@ -53,6 +53,20 @@ class PagosRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+     /**
+     * @return Pagos[] Returns an array of Pagos objects
+     */
+    public function findPagosByProveedorId($proveedor_id): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.proveedor = :val')
+            ->setParameter('val', $proveedor_id)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
     /**
      * @return Pagos[] Returns an array of Pagos objects
      */

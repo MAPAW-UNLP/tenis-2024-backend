@@ -29,7 +29,7 @@ class Proveedor
     private $telefono;
 
     /**
-     * @ORM\OneToMany(targetEntity="PagoProveedor", mappedBy="profesor")
+     * @ORM\OneToMany(targetEntity="Pagos", mappedBy="proveedor")
     */
     private $pagos;
 
