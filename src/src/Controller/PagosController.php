@@ -151,8 +151,9 @@ class PagosController extends AbstractController
 
         if (isset($data->profesorId)){
             $cs->registrarPagoProfesor($data->profesorId, $descripcion, $motivo, $monto, $fecha);
-        }
-        else{
+        } else if(isset($data->idProveedor)){
+            $cs->registrarPagoProveedor($data->idProveedor, $descripcion, $motivo, $monto);
+        } else{
             $cs->registrarPago($motivo, $monto, $descripcion, $fecha);
         }
 

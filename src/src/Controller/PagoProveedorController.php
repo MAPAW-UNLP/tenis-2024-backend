@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\PagoProveedor;
 use App\Entity\Proveedor;
+use App\Entity\Pagos;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,19 +35,20 @@ class PagoProveedorController extends AbstractController
 
         $em = $doctrine->getManager();
 
-        $pagos = $em->getRepository( PagoProveedor::class )->findAll();
+        $pagos = $em->getRepository( Pagos::class )->findAll();
 
         $objPagos = array();
 
         foreach ($pagos as $pago) {
-            array_push($objPagos, array(
-                'id' => $pago->getId(),
-                'monto' => $pago->getMonto(), // monto
-                'fecha' => $cs->getFormattedDate($pago->getFecha()),
-                'hora' => $pago->getHora()->format('H:i'),
-                'descripcion' => $pago->getDescripcion()
-            ));
-
+            if($pago->getProveedor() != null){
+                array_push($objPagos, array(
+                    'id' => $pago->getId(),
+                    'monto' => $pago->getMonto(), // monto
+                    'fecha' => $cs->getFormattedDate($pago->getFecha()),
+                    'hora' => $pago->getHora()->format('H:i'),
+                    'descripcion' => $pago->getDescripcion()
+                ));
+            }
         }
 
         return $this->json($objPagos);
@@ -67,11 +68,10 @@ class PagoProveedorController extends AbstractController
 
         $em = $doctrine->getManager();
 
-        $pagos = $em->getRepository( PagoProveedor::class )->findPagosByProveedorId($proveedorId);
+        $pagos = $em->getRepository( Pagos::class )->findPagosByProveedorId($proveedorId);
 
         $objPagos = array();
         foreach($pagos as $pago){
-
            array_push($objPagos, array(
             'id' => $pago->getId(),
             "monto" => $pago->getMonto(), // = monto
@@ -98,9 +98,9 @@ class PagoProveedorController extends AbstractController
 
         $data = json_decode( $request->getContent());
         $proveedor = $em->getRepository(Proveedor::class)->find($data->idProveedor); 
-        $pago = new PagoProveedor();
-        $pago->setIdProveedor($data->idProveedor);
+        $pago = new Pagos();
         $pago->setProveedor($proveedor);
+        $pago->setMotivo('2');
         $pago->setDescripcion($data->descripcion);
         $pago->setMonto($data->monto);
         $fechaPago = new DateTime();
