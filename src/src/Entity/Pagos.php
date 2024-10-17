@@ -63,6 +63,23 @@ class Pagos
      */
     private $cantidad;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="Proveedor", inversedBy="pagos")
+     * @ORM\JoinColumn(name="proveedor_id", referencedColumnName="id", nullable=true)
+     */
+    private $proveedor;
+
+    public function getProveedor(): ?Proveedor
+    {
+        return $this->proveedor;
+    }
+
+    public function setProveedor(?Proveedor $proveedor): self
+    {
+        $this->proveedor = $proveedor;
+
+        return $this;
+    }
 
     public function getId(): ?int
     {
