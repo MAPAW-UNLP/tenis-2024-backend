@@ -243,12 +243,6 @@ public function getClasesPorProfesor(Request $request, ReservaRepository $reserv
         array_push($reservasFormateadas,$cs->reservaFromObject($reserva));
     }
 
-    if (empty($reservas)) {
-        return $this->json([
-            'message' => 'No se encontraron clases para la fecha indicada.',
-        ], 404);
-    }
-
     return $this->json([
         'message' => 'Clases encontradas.',
         'data' => $reservasFormateadas,

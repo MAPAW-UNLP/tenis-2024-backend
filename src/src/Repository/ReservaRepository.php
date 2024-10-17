@@ -243,6 +243,7 @@ class ReservaRepository extends ServiceEntityRepository
             return array();
         }
 
+        //dd($personaId, $fecha);
 
         // Crear la consulta base para las reservas
         $queryBuilder = $this->createQueryBuilder('r')
