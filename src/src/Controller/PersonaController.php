@@ -49,14 +49,14 @@ class PersonaController extends AbstractController
         $data = json_decode( $request->getContent());
         $nombre = $data->nombre;
         $telefono = $data->telefono;
-        $esAlumno = isset($data->esalumno) && $data->esalumno == 'true'? true: false;
-        $fechaNac = $esAlumno && isset($data->fechanac) &&  strlen($data->fechanac) > 0 ? new DateTime($data->fechanac): null;
+        $esCliente = isset($data->escliente) && $data->escliente == 'true'? true: false;
+        $fechaNac = $esCliente && isset($data->fechanac) &&  strlen($data->fechanac) > 0 ? new DateTime($data->fechanac): null;
 
         $persona = new Persona();
         $persona->setNombre($nombre);
         $persona->setTelefono($telefono);
         $persona->setFechanac($fechaNac);
-        $persona->setEsalumno($esAlumno);
+        $persona->setEscliente($esCliente);
         $persona->setVisible(true);
 
         $em = $doctrine->getManager();
@@ -121,27 +121,27 @@ class PersonaController extends AbstractController
     }
 
     /**
-     * @Route("/persona/alumnos", name="app_alumnos", methods={"GET"})
+     * @Route("/persona/clientes", name="app_clientes", methods={"GET"})
      */
-    public function getAlumnos(
+    public function getClientes(
         ServiceCustomService $cs
     ): Response
     {
-        $alumnos = $this->getDoctrine()->getRepository( Persona::class )->findAllAlumnos();
-        $alumnosFormateado=[];
+        $clientes = $this->getDoctrine()->getRepository( Persona::class )->findAllClientes();
+        $clientesFormateado=[];
 
-        foreach($alumnos as $alumno){
-            $alumnoFormateado = $cs->formatearAlumno($alumno);
-            array_push($alumnosFormateado, $alumnoFormateado);
+        foreach($clientes as $cliente){
+            $clienteFormateado = $cs->formatearCliente($cliente);
+            array_push($clientesFormateado, $clienteFormateado);
         }
         $resp = array(
             "rta"=> "error",
             "detail"=> "Se produjo un error en el alta de la cancha."
         );
-        if (isset($alumnosFormateado)){
+        if (isset($clientesFormateado)){
 
             $resp['rta'] =  "ok";
-            $resp['detail'] = $alumnosFormateado;
+            $resp['detail'] = $clientesFormateado;
 
         }
         return $this->json($resp);

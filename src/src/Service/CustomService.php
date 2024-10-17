@@ -5,7 +5,7 @@ namespace App\Service;
 date_default_timezone_set('America/Buenos_Aires');
 
 use App\Entity\Alquiler;
-use App\Entity\Alumno;
+use App\Entity\Cliente;
 use App\Entity\Cancha;
 use App\Entity\Clases;
 use App\Entity\Grupo;
@@ -120,7 +120,7 @@ class CustomService
             // "apellido" => $persona->getApellido(),
             "telefono" => $persona->getTelefono(),
             // "fechanac" => $persona->getFechaNac() != null ? $this->getFormattedDate($persona->getFechaNac()) : null,
-            "esalumno" => $persona->isEsAlumno(),
+            "cliente" => $persona->isEsCliente(),
             "visible" => $persona->isVisible(),
         );
 
@@ -155,20 +155,20 @@ class CustomService
         return $id[0]->getId();
     }
 
-    public function formatearAlumno($alumno)
+    public function formatearCliente($cliente)
     {
 
-        $fechaNac = $alumno->getFechaNac() ? $this->getFormattedDate($alumno->getFechaNac()) : '';
+        $fechaNac = $cliente->getFechaNac() ? $this->getFormattedDate($cliente->getFechaNac()) : '';
 
-        $alumnoFormateado = array(
-            "id"    => $alumno->getId(),
-            "nombre"    => $alumno->getNombre(),
-            "telefono"  => $alumno->getTelefono(),
+        $clienteFormateado = array(
+            "id"    => $cliente->getId(),
+            "nombre"    => $cliente->getNombre(),
+            "telefono"  => $cliente->getTelefono(),
             "fechanac"  => $fechaNac,
             "saldo"     => 0,
         );
 
-        return $alumnoFormateado;
+        return $clienteFormateado;
     }
 
     public function replicarReservaNueva($reservaId)
@@ -368,13 +368,13 @@ class CustomService
         $this->em->flush();
     }
 
-    public function registrarCobroAlumno($idAlumno, $idTipoClase, $concepto, $descripcion,$monto, $fecha)
+    public function registrarCobroCliente($idCliente, $idTipoClase, $concepto, $descripcion,$monto, $fecha)
     {
-        $alumno = $this->em->getRepository(Alumno::class)->find($idAlumno); 
+        $cliente = $this->em->getRepository(Cliente::class)->find($idCliente); 
 
         $cobro = new Cobro();
-//        $alumno->addCobro($cobro);
-        $cobro->setAlumno($alumno)->setMonto($monto);
+//        $cliente->addCobro($cobro);
+        $cobro->setCliente($cliente)->setMonto($monto);
         $fechaCobro = isset($fecha) ? $fecha : new Date();
         $cobro->setFecha($fechaCobro);
         $cobro->setConcepto($concepto);
@@ -383,7 +383,7 @@ class CustomService
         $cobro->setHora(new DateTime());
 
         $this->em->persist($cobro);
-        $this->em->persist($alumno);
+        $this->em->persist($cliente);
         $this->em->flush();
     }
 
@@ -496,15 +496,15 @@ class CustomService
     }
 
 
-    public function add_people_to_group($alumnos)
+    public function add_people_to_group($clientes)
     {
         $lastReservaId = (int) $this->getLastReservaId();
 
-        foreach ($alumnos as $alumno_id) {
-            $grupo_alumno = new Grupo();
-            $grupo_alumno->setReservaId($lastReservaId);
-            $grupo_alumno->setPersonaId($alumno_id);
-            $this->em->persist($grupo_alumno);
+        foreach ($clientes as $cliente_id) {
+            $grupo_cliente = new Grupo();
+            $grupo_cliente->setReservaId($lastReservaId);
+            $grupo_cliente->setPersonaId($cliente_id);
+            $this->em->persist($grupo_cliente);
             $this->em->flush();
         }
     }
