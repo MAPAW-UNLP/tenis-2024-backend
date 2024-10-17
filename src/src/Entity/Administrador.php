@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AdministradorRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
  * @ORM\Entity(repositoryClass=AdministradorRepository::class)
@@ -18,15 +19,6 @@ class Administrador
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=30)
-     */
-    private $user;
-
-    /**
-     * @ORM\Column(type="string", length=50)
-     */
-    private $password;
-    /**
      * @ORM\OneToOne(targetEntity="Usuario", cascade={"persist"}, inversedBy="administrador")
      * @ORM\JoinColumn(name="id", referencedColumnName="id")
      */
@@ -35,30 +27,6 @@ class Administrador
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getUser(): ?string
-    {
-        return $this->user;
-    }
-
-    public function setUser(string $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
     }
 
     /** @Ignore() */

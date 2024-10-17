@@ -167,12 +167,12 @@ class ReservaController extends AbstractController
 
         if ($reservaParam['persona_id'] != null) {
             $ids_grupo = explode(',', $reservaParam['grupo']);
-            foreach ($ids_grupo as $alumno_id) {
-                if (is_numeric($alumno_id)) {
-                    $grupo_alumno = new Grupo();
-                    $grupo_alumno->setReservaId($idReserva);
-                    $grupo_alumno->setPersonaId($alumno_id);
-                    $em->persist($grupo_alumno);
+            foreach ($ids_grupo as $cliente_id) {
+                if (is_numeric($cliente_id)) {
+                    $grupo_cliente = new Grupo();
+                    $grupo_cliente->setReservaId($idReserva);
+                    $grupo_cliente->setPersonaId($cliente_id);
+                    $em->persist($grupo_cliente);
                 }
             }
 
@@ -215,12 +215,12 @@ class ReservaController extends AbstractController
             $horaIni = new DateTime($data['hora_ini']);
             $horaFin = new DateTime($data['hora_fin']);
             $canchaId = $data['cancha_id'];
-            $alumnos = $data['alumnos'];
+            $clientes = $data['clientes'];
 
             if ($fechaFin > $fechaInicio) {
-                return $this->rangeReservationProfesor($canchaId, $fechaInicio, $fechaFin, $horaIni, $horaFin, $alumnos, $em, $cs, $data);
+                return $this->rangeReservationProfesor($canchaId, $fechaInicio, $fechaFin, $horaIni, $horaFin, $clientes, $em, $cs, $data);
             } else {
-                return $this->singleReservationProfesor($canchaId, $fechaInicio, $horaIni, $horaFin, $alumnos, $em, $cs, $data);
+                return $this->singleReservationProfesor($canchaId, $fechaInicio, $horaIni, $horaFin, $clientes, $em, $cs, $data);
             }
 
             return new JsonResponse(['data' => [
@@ -236,7 +236,7 @@ class ReservaController extends AbstractController
         }
     }
 
-    public function rangeReservationProfesor($canchaId, $fechaInicio, $fechaFin, $horaIni, $horaFin, $alumnos, $em, $cs, $data)
+    public function rangeReservationProfesor($canchaId, $fechaInicio, $fechaFin, $horaIni, $horaFin, $clientes, $em, $cs, $data)
     {
         $fechas_ocupadas = [];
         $nueva_cancha_reservada = [];
@@ -252,7 +252,7 @@ class ReservaController extends AbstractController
                 $horaFin,
                 1, // TODO: cambiar por el usuario autenticado del momento (Profesor)
                 $canchaId,
-                count($alumnos) > 1 ? 2 : 1, // tipo_clase_id (Siempre en grupo)
+                count($clientes) > 1 ? 2 : 1, // tipo_clase_id (Siempre en grupo)
                 0, // replica
                 0 // estado
             );
@@ -261,7 +261,7 @@ class ReservaController extends AbstractController
                 // Clase grupal
                 $em->persist($reserva);
                 $em->flush();
-                $cs->add_people_to_group($alumnos);
+                $cs->add_people_to_group($clientes);
             } else {
                 $reserva_otra_cancha = $cs->getIdCanchaDisponible($reserva, $fechaInicio);
 
@@ -269,7 +269,7 @@ class ReservaController extends AbstractController
                     $reserva->setCanchaId($reserva_otra_cancha);
                     $em->persist($reserva);
                     $em->flush();
-                    $cs->add_people_to_group($alumnos);
+                    $cs->add_people_to_group($clientes);
                     array_push($nueva_cancha_reservada, ['cancha_id' => $reserva_otra_cancha, 'fecha' => $fechaInicio->format('Y-m-d')]);
                 } else {
                     array_push($fechas_ocupadas, $fechaInicio->format('Y-m-d'));
@@ -312,7 +312,7 @@ class ReservaController extends AbstractController
         ]], 201);
     }
 
-    public function singleReservationProfesor($canchaId, $fechaInicio, $horaIni, $horaFin, $alumnos, $em, $cs, $data)
+    public function singleReservationProfesor($canchaId, $fechaInicio, $horaIni, $horaFin, $clientes, $em, $cs, $data)
     {
         // Fecha inicio = Fecha fin
         $reserva = new Reserva(
@@ -321,7 +321,7 @@ class ReservaController extends AbstractController
             $horaFin,
             1, // TODO: cambiar por el usuario autenticado del momento (Profesor)
             $canchaId,
-            count($alumnos) > 1 ? 2 : 1, // tipo_clase_id (1 = individual, 2 = grupal)
+            count($clientes) > 1 ? 2 : 1, // tipo_clase_id (1 = individual, 2 = grupal)
             0, // replica
             0 // estado
         );
@@ -331,7 +331,7 @@ class ReservaController extends AbstractController
             $em->persist($reserva);
             $em->flush();
 
-            $cs->add_people_to_group($alumnos);
+            $cs->add_people_to_group($clientes);
 
             return new JsonResponse([
                 'data' => [
@@ -346,7 +346,7 @@ class ReservaController extends AbstractController
                 $em->persist($reserva);
                 $em->flush();
 
-                $cs->add_people_to_group($alumnos);
+                $cs->add_people_to_group($clientes);
                 $data['cancha_id'] = $reserva_otra_cancha;
 
                 return new JsonResponse(['data' => [
@@ -433,12 +433,12 @@ class ReservaController extends AbstractController
             $em->getRepository(Grupo::class)->remove($personaGrupoViejo);
         }
 
-        foreach ($ids_grupo as $alumno_id) {
-            if (is_numeric($alumno_id)) {
-                $grupo_alumno = new Grupo();
-                $grupo_alumno->setReservaId($reservaId);
-                $grupo_alumno->setPersonaId($alumno_id);
-                $em->persist($grupo_alumno);
+        foreach ($ids_grupo as $cliente_id) {
+            if (is_numeric($cliente_id)) {
+                $grupo_cliente = new Grupo();
+                $grupo_cliente->setReservaId($reservaId);
+                $grupo_cliente->setPersonaId($cliente_id);
+                $em->persist($grupo_cliente);
             }
         }
 
@@ -473,12 +473,12 @@ class ReservaController extends AbstractController
             $em->getRepository(Grupo::class)->remove($personaGrupoViejo);
         }
 
-        foreach ($ids_grupo as $alumno_id) {
-            if (is_numeric($alumno_id)) {
-                $grupo_alumno = new Grupo();
-                $grupo_alumno->setReservaId($reservaId);
-                $grupo_alumno->setPersonaId($alumno_id);
-                $em->persist($grupo_alumno);
+        foreach ($ids_grupo as $cliente_id) {
+            if (is_numeric($cliente_id)) {
+                $grupo_cliente = new Grupo();
+                $grupo_cliente->setReservaId($reservaId);
+                $grupo_cliente->setPersonaId($cliente_id);
+                $em->persist($grupo_cliente);
             }
         }
 

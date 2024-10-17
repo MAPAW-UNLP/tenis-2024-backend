@@ -13,7 +13,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityRepository;
 use App\Entity\Profesor;
-use App\Entity\Alumno;
+use App\Entity\Cliente;
 use App\Entity\Cobro;
 use App\Entity\Pagos;
 
@@ -37,8 +37,8 @@ class BalanzaController extends AbstractController
         $pagosRepository = $em->getRepository( Pagos::class );
         $pagosG = $pagosRepository->findAll();
 
-        $alumnoRepository = $em->getRepository( Alumno::class );
-        $alumnos = $alumnoRepository->findAll();
+        $clienteRepository = $em->getRepository( Cliente::class );
+        $clientes = $clienteRepository->findAll();
 
         $profesorRepository = $em->getRepository( Profesor::class );
         $profesores = $profesorRepository->findAll();
@@ -51,9 +51,9 @@ class BalanzaController extends AbstractController
         $totalCobros += $cs->totalMontos($cobrosG);
         $totalPagos += $cs->totalMontos($pagosG);
 
-        // Calcula la suma de los montos de los cobros de los alumnos
-        foreach ($alumnos as $alumno) {
-            $cobros = $alumno->getCobros();
+        // Calcula la suma de los montos de los cobros de los clientes
+        foreach ($clientes as $cliente) {
+            $cobros = $cliente->getCobros();
             if($cobros){
                 $totalCobros += $cs->totalMontos($cobros);
             }
@@ -96,8 +96,8 @@ class BalanzaController extends AbstractController
 
         $statement = $em->getConnection()->prepare(
             "SELECT mov.fecha FROM (
-                (SELECT c.id, c.fecha, c.concepto, c.monto, c.descripcion, c.alumno_id as persona_id, a.nombre, 'Cobro' AS tipo
-                FROM cobro c INNER JOIN alumno a ON a.id = c.alumno_id) as cobrodata
+                (SELECT c.id, c.fecha, c.concepto, c.monto, c.descripcion, c.cliente_id as persona_id, a.nombre, 'Cobro' AS tipo
+                FROM cobro c INNER JOIN cliente a ON a.id = c.cliente_id) as cobrodata
                 UNION
                 (SELECT p.id, p.fecha, p.motivo as concepto, p.monto, p.descripcion, p.profesor_id as persona_id, prof.nombre, 'Pago' AS tipo
                 FROM pago p INNER JOIN profesor prof ON prof.id = p.profesor_id) as pagodata
@@ -126,7 +126,7 @@ class BalanzaController extends AbstractController
         $pagosG = $pagosRepository->findAll();
 
 
-        // Calcula la suma de los montos de los cobros de los alumnos
+        // Calcula la suma de los montos de los cobros de los clientes
         foreach ($pagosG as $pago) {
             $arrResult[] = $pago;
         }
@@ -209,11 +209,11 @@ class BalanzaController extends AbstractController
                     'fecha_format' => $cobro->getFecha()->format('d/m/y'),
                     "hora" => $cobro->getHora()->format('H:i'),
                     'concepto' => $cobro->getConcepto(),
-                    'concepto_desc' => intval($cobro->getConcepto()) === 1 ? 'Alumno' :
+                    'concepto_desc' => intval($cobro->getConcepto()) === 1 ? 'Cliente' :
                         (intval($cobro->getConcepto()) === 2 ? 'Alquiler' : 'Varios'),
                     'descripcion' => $cobro->getDescripcion() ? $cobro->getDescripcion() : null,
                     'monto' => $cobro->getMonto(),
-                    'nombre' => $cobro->getAlumno() ? $cobro->getAlumno()->getNombre() : "",
+                    'nombre' => $cobro->getCliente() ? $cobro->getCliente()->getNombre() : "",
                     'movimiento_id' => 1 // Cobro
                 ];
             }
@@ -292,7 +292,7 @@ class BalanzaController extends AbstractController
     
     //     if ($resultados) {
     //         foreach ($resultados as $resultado) {
-    //             $entidadRelacionada = $resultados->getAlumno()->getCobros();
+    //             $entidadRelacionada = $resultados->getCliente()->getCobros();
     //             if ($entidadRelacionada) {
     //                 $total += $cs->totalMontos($entidadRelacionada);
     //             }

@@ -48,10 +48,10 @@ class Cobro
     private $concepto;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Alumno", inversedBy="cobros")
-     * @ORM\JoinColumn(name="alumno_id", referencedColumnName="id", nullable=true)
+     * @ORM\ManyToOne(targetEntity="Cliente", inversedBy="cobros")
+     * @ORM\JoinColumn(name="cliente_id", referencedColumnName="id", nullable=true)
      */
-    private $alumno;
+    private $cliente;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true)
@@ -140,14 +140,14 @@ class Cobro
         return $this;
     }
 
-    public function getAlumno(): ?Alumno
+    public function getCliente(): ?Cliente
     {
-        return $this->alumno;
+        return $this->cliente;
     }
 
-    public function setAlumno(?Alumno $alumno): self
+    public function setCliente(?Cliente $cliente): self
     {
-        $this->alumno = $alumno;
+        $this->cliente = $cliente;
 
         return $this;
     }
