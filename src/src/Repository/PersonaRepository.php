@@ -50,12 +50,12 @@ class PersonaRepository extends ServiceEntityRepository
    }
 
     /**
-    * @return Persona[] Returns an array of Persona objects (alumnos)
+    * @return Persona[] Returns an array of Persona objects (clientes)
     */
-   public function findAllAlumnos(): array
+   public function findAllClientes(): array
    {
        return $this->createQueryBuilder('p')
-           ->andWhere('p.esalumno = :val')
+           ->andWhere('p.escliente = :val')
            ->setParameter('val', 1)
            ->orderBy('p.id', 'ASC')
            ->getQuery()
@@ -64,12 +64,12 @@ class PersonaRepository extends ServiceEntityRepository
    }
 
     /**
-    * @return Persona[] Returns an array of Persona objects (alumnos)
+    * @return Persona[] Returns an array of Persona objects (clientes)
     */
     public function findAllProfesores(): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.esalumno = :val')
+            ->andWhere('p.escliente = :val')
             ->setParameter('val', 0)
             ->orderBy('p.id', 'ASC')
             ->getQuery()

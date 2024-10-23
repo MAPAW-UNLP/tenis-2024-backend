@@ -5,7 +5,7 @@ namespace App\Service;
 date_default_timezone_set('America/Buenos_Aires');
 
 use App\Entity\Alquiler;
-use App\Entity\Alumno;
+use App\Entity\Cliente;
 use App\Entity\Cancha;
 use App\Entity\Clases;
 use App\Entity\Grupo;
@@ -45,13 +45,13 @@ class CustomService
 
         $grupo = [];
         $personaTitular = null;
-        $alumnoRepository = $this->em->getRepository(Alumno::class);
+        $clienteRepository = $this->em->getRepository(Cliente::class);
 
 
         if ($reserva->getPersonaId() !== null && $reserva->getPersonaId() != 0) {
             // Obtener el persona_id desde el objeto Reserva
             $profesorId = $reserva->getPersonaId();
-    
+
             // Usar el personaId para buscar la persona correspondiente
             $personaTitular = $this->em->getRepository(Profesor::class)->findOneById($profesorId);
 
@@ -59,13 +59,13 @@ class CustomService
 
             if (count($grupoPersonasId) > 0) {
                 foreach ($grupoPersonasId as $persona) {
-                    $miembro = $alumnoRepository->findOneById($persona->getPersonaId())->toArrayAsociativo();
+                    $miembro = $clienteRepository->findOneById($persona->getPersonaId())->toArrayAsociativo();
                     array_push($grupo, $miembro);
                 }
             }
         } else { //es alquiler
             $personaTitular = $this->em->getRepository(Alquiler::class)->findAlquilerByReservaId($reserva->getId());
-            if($personaTitular != null){
+            if ($personaTitular != null) {
                 $personaTitular = $personaTitular->getCliente();
             }
         }
@@ -105,36 +105,35 @@ class CustomService
         return $fecha->format('Y-m-d');
     }
 
-
     public function replicarReservaNueva($reservaId)
     {
         $clase = $this->em->getRepository(Reserva::class)->findOneById($reservaId);
-    
+
         if (!$clase->isReplica()) {
             return;
         }
-    
+
         $grupo = $this->em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
         $fecha = clone $clase->getFecha();
         $nroMesActual = date('m');
         $nroMesProximo = (new DateTime('first day of next month'))->format('m');
-    
+
         $reservasParaPersistir = [];
-        $itemsGrupoParaPersistir = [];//hasta aca va
-    
+        $itemsGrupoParaPersistir = []; //hasta aca va
+
         for ($i = 0; $i < 10; $i++) {
             date_add($fecha, date_interval_create_from_date_string("7 days"));
-    
+
             $idCancha = $this->getIdCanchaDisponible($clase, $fecha);
-            
+
             if (($fecha->format('m') == $nroMesActual || $fecha->format('m') == $nroMesProximo) && $idCancha > 0) {
                 $reservaReplicada = clone $clase;
                 $reservaReplicada->setFecha(clone $fecha);
                 $reservaReplicada->setCanchaId($idCancha);
                 $reservasParaPersistir[] = $reservaReplicada;
-    
+
                 $idUltimaReserva = $this->em->getRepository(Reserva::class)->getLastReservaId();
-    
+
                 foreach ($grupo as $itemGrupo) {
                     $itemReplicado = clone $itemGrupo;
                     $itemReplicado->setReservaId($idUltimaReserva);
@@ -142,16 +141,16 @@ class CustomService
                 }
             }
         }
-    
+
         // Persistir todas las reservas y grupos en un solo flush
         foreach ($reservasParaPersistir as $reserva) {
             $this->em->persist($reserva);
         }
-    
+
         foreach ($itemsGrupoParaPersistir as $itemGrupo) {
             $this->em->persist($itemGrupo);
         }
-    
+
         $this->em->flush();
         $this->guardarOActualizarReplicas($reservaId, $nroMesProximo);
     }
@@ -177,9 +176,9 @@ class CustomService
     }
 
     /**
-    * @deprecated Este método no debe usarse y debería eliminarse. Usa el método de CanchaRepository `getIdCanchaDisponible()` en su lugar.
-    */
-    public function getIdCanchaDisponible($reserva, $fecha) 
+     * @deprecated Este método no debe usarse y debería eliminarse. Usa el método de CanchaRepository `getIdCanchaDisponible()` en su lugar.
+     */
+    public function getIdCanchaDisponible($reserva, $fecha)
     { // devolver id de la cancha disponible, preferentemente la original (si no hay ninguna, retorna 0)
 
         $canchaRepository = $this->em->getRepository(Cancha::class);
@@ -219,13 +218,13 @@ class CustomService
     /**
      * @deprecated Este método no debe usarse y debería eliminarse. Fue movido a CobroRepository
      */
-    public function registrarCobroAlumno($idAlumno, $idTipoClase, $concepto, $descripcion,$monto, $fecha)
+    public function registrarCobroCliente($idCliente, $idTipoClase, $concepto, $descripcion, $monto, $fecha)
     {
-        $alumno = $this->em->getRepository(Alumno::class)->find($idAlumno); 
+        $cliente = $this->em->getRepository(Cliente::class)->find($idCliente);
 
         $cobro = new Cobro();
-//        $alumno->addCobro($cobro);
-        $cobro->setAlumno($alumno)->setMonto($monto);
+        //        $cliente->addCobro($cobro);
+        $cobro->setCliente($cliente)->setMonto($monto);
         $fechaCobro = isset($fecha) ? $fecha : new Date();
         $cobro->setFecha($fechaCobro);
         $cobro->setConcepto($concepto);
@@ -234,7 +233,7 @@ class CustomService
         $cobro->setHora(new DateTime());
 
         $this->em->persist($cobro);
-        $this->em->persist($alumno);
+        $this->em->persist($cliente);
         $this->em->flush();
     }
 
@@ -279,7 +278,7 @@ class CustomService
     {
 
         //$replicas = $this->em->getRepository(Replicas::class)->findAll();
-        $fechaActual=new DateTime();
+        $fechaActual = new DateTime();
         $replicas = $this->em->getRepository(Replicas::class)->finAllByLastMonth($fechaActual->format("m"));
 
         foreach ($replicas as $replica) {
@@ -349,15 +348,15 @@ class CustomService
     }
 
 
-    public function add_people_to_group($alumnos)
+    public function add_people_to_group($clientes)
     {
         $lastReservaId = $this->em->getRepository(Reserva::class)->getLastReservaId();
 
-        foreach ($alumnos as $alumno_id) {
-            $grupo_alumno = new Grupo();
-            $grupo_alumno->setReservaId($lastReservaId);
-            $grupo_alumno->setPersonaId($alumno_id);
-            $this->em->persist($grupo_alumno);
+        foreach ($clientes as $cliente_id) {
+            $grupo_cliente = new Grupo();
+            $grupo_cliente->setReservaId($lastReservaId);
+            $grupo_cliente->setPersonaId($cliente_id);
+            $this->em->persist($grupo_cliente);
             $this->em->flush();
         }
     }
@@ -369,13 +368,13 @@ class CustomService
 
     /** 
      * @deprecated Este método no debe usarse y debería eliminarse. BalanzaController ya tiene un método privado idéntico para ello
-    */
-    public function totalMontos($collection){
+     */
+    public function totalMontos($collection)
+    {
         $total = 0;
         foreach ($collection as $item) {
             $total += $item->getMonto();
         }
         return $total;
     }
-
 }

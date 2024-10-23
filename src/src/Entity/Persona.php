@@ -40,7 +40,7 @@ class Persona
     /**
      * @ORM\Column(type="boolean")
      */
-    private $esalumno;
+    private $escliente;
 
     /**
      * @ORM\Column(type="boolean")
@@ -100,14 +100,14 @@ class Persona
         return $this;
     }
 
-    public function isEsalumno(): ?bool
+    public function isEscliente(): ?bool
     {
-        return $this->esalumno;
+        return $this->escliente;
     }
 
-    public function setEsalumno(bool $esalumno): self
+    public function setEscliente(bool $escliente): self
     {
-        $this->esalumno = $esalumno;
+        $this->escliente = $escliente;
 
         return $this;
     }

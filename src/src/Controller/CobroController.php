@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Alumno;
+use App\Entity\Cliente;
 use App\Entity\Clases;
 use App\Entity\Cobro;
 use Doctrine\Persistence\ManagerRegistry;
@@ -48,7 +48,7 @@ class CobroController extends AbstractController
         $objCobros = array();
         foreach($cobros as $cobro){
             if ($cobro -> getConcepto() === '1'){
-               $concepto_desc = 'Alumno';
+               $concepto_desc = 'Cliente';
             }
             elseif ($cobro -> getConcepto() === '2'){
                 $concepto_desc = 'Alquiler';
@@ -58,8 +58,8 @@ class CobroController extends AbstractController
             }
            array_push($objCobros, array(
             "id" => $cobro -> getId(),
-            "idAlumno" => $cobro->getAlumno() ? $cobro->getAlumno()->getId() : null,
-            "nombreAlumno" => $cobro->getAlumno() ? $cobro->getAlumno()->getNombre() : "",
+            "idCliente" => $cobro->getCliente() ? $cobro->getCliente()->getId() : null,
+            "nombreCliente" => $cobro->getCliente() ? $cobro->getCliente()->getNombre() : "",
             "monto" => $cobro->getMonto(), // monto
             "fecha" => $cs->getFormattedDate($cobro->getFecha()),
             "fecha_format" => $cobro->getFecha()->format('d/m/y'),
@@ -74,22 +74,22 @@ class CobroController extends AbstractController
 
 
     /**
-     * @Route("/cobros_por_alumno", name="app_Cobros_alumnoId", methods={"GET"})
+     * @Route("/cobros_por_cliente", name="app_Cobros_clienteId", methods={"GET"})
     */
-    public function getCobrosByAlumnoId(
+    public function getCobrosByClienteId(
         Request $request,
         ManagerRegistry $doctrine,
         ServiceCustomService $cs
     ): Response
     {
-        $alumnoId = $request->query->get('alumnoId');
+        $clienteId = $request->query->get('clienteId');
 
         $em = $doctrine->getManager();
 
-    // //  Con el ID que recibimos por parametro consultamos por la entidad Alumno e iteramos directament en su coleccion
-    //     $alumno = $em->getRepository( Alumno::class )->findOneById($alumnoId);
+    // //  Con el ID que recibimos por parametro consultamos por la entidad Cliente e iteramos directament en su coleccion
+    //     $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
 
-    //     $cobros = $alumno -> getCobros();
+    //     $cobros = $cliente -> getCobros();
 
     //     $objCobros = array();
 
@@ -114,8 +114,8 @@ class CobroController extends AbstractController
         // ------------------- SOLUCION 1 --------------------------
 
         $cobros = $cobroRepository->createQueryBuilder('c')
-        ->where('c.alumno = :alumnoId')
-        ->setParameter('alumnoId', $alumnoId)
+        ->where('c.cliente = :clienteId')
+        ->setParameter('clienteId', $clienteId)
         ->getQuery()
         ->getResult();
 
@@ -136,11 +136,11 @@ class CobroController extends AbstractController
         // $todosLosCobros = $cobroRepository->findAll();
         // $objCobros = [];
         // foreach ($todosLosCobros as $cobro) {
-        //     // Verifica si el id del alumno matchea
-        //     if ($cobro->getAlumno()->getId() === $alumnoId) {
+        //     // Verifica si el id del cliente matchea
+        //     if ($cobro->getCliente()->getId() === $clienteId) {
                 
-        //         if ($cobro->getAlumno()->getCobros()){ // si existen cobros para ese alumno
-        //             $cobrosDeAlu = $cobro->getAlumno()->getCobros();
+        //         if ($cobro->getCliente()->getCobros()){ // si existen cobros para ese cliente
+        //             $cobrosDeAlu = $cobro->getCliente()->getCobros();
         //             foreach ($cobrosDeAlu as $ca ) {
         //                 $objCobros[] = [
         //                     "concepto" => $ca->getConcepto(),
@@ -159,20 +159,20 @@ class CobroController extends AbstractController
     }
 
     /**
-     * @Route("/cobros_por_alumno_v2", name="app_cbros_por_alumno_v2", methods={"GET"})
+     * @Route("/cobros_por_cliente_v2", name="app_cbros_por_cliente_v2", methods={"GET"})
      */
-    public function getCobrosByAlumnoV2(
+    public function getCobrosByClienteV2(
         Request $request,
         ManagerRegistry $doctrine,
         ServiceCustomService $cs
     ): Response
     {
-        $alumnoId = $request->query->get('alumnoId');
+        $clienteId = $request->query->get('clienteId');
         $em = $doctrine->getManager();
 
-        //  Con el ID que recibimos por parametro consultamos por la entidad Alumno e iteramos directament en su coleccion
+        //  Con el ID que recibimos por parametro consultamos por la entidad Cliente e iteramos directament en su coleccion
         $cobros = $em->getRepository( Cobro::class )->findBy(
-            ['alumno' => strval($alumnoId)],
+            ['cliente' => strval($clienteId)],
             ['fecha' => 'DESC']
         );
 
@@ -237,7 +237,7 @@ class CobroController extends AbstractController
         ServiceCustomService $cs
     ): Response
     {
-        // COBRO GENERICO SIN ALUMNO
+        // COBRO GENERICO SIN CLIENTE
         $data = json_decode( $request->getContent());
 
         $concepto = $data -> concepto;
@@ -245,9 +245,9 @@ class CobroController extends AbstractController
         $descripcion = $data -> descripcion;
         $fecha =  isset($data -> fecha) ? new DateTime($data->fecha) : null;
 
-        if (isset($data -> alumnoId)){
+        if (isset($data -> clienteId)){
             $idTipoClase = $data->idTipoClase ?? null;
-            $cs->registrarCobroAlumno($data -> alumnoId, $idTipoClase, $concepto, $descripcion, $monto, $fecha);
+            $cs->registrarCobroCliente($data -> clienteId, $idTipoClase, $concepto, $descripcion, $monto, $fecha);
         }
         else {
             $cs->registrarCobro($concepto, $monto, $descripcion, $fecha);
@@ -263,16 +263,16 @@ class CobroController extends AbstractController
 
 
     /**
-     * @Route("/cobrosAlumno", name="add_cobrosAlumno", methods={"POST"})
+     * @Route("/cobrosCliente", name="add_cobrosCliente", methods={"POST"})
     */
-    public function addCobrosAlumno(
+    public function addCobrosCliente(
         Request $request, 
         ServiceCustomService $cs
         ): Response
     {
 
         $data = json_decode( $request->getContent());
-        $idAlumno = $data->idAlumno;
+        $idCliente = $data->idCliente;
         $cobros = $data->cobros;
         $concepto = $data->concepto;
         $descripcion = $data->descripcion;
@@ -281,12 +281,12 @@ class CobroController extends AbstractController
         
         foreach($cobrosArray as $cobros){
             $data = explode(':', $cobros );
-            $cs->registrarCobroAlumno($idAlumno,$data[0], $data[1], $concepto, $descripcion,$fecha);
+            $cs->registrarCobroCliente($idCliente,$data[0], $data[1], $concepto, $descripcion,$fecha);
         }
     
         $resp = array(
             "rta"=> "ok",
-            "detail"=> "Registro de cobro al alumno exitoso."
+            "detail"=> "Registro de cobro al cliente exitoso."
         );
 
         return $this->json(($resp));

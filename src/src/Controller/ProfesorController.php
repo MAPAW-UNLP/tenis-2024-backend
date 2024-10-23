@@ -86,7 +86,7 @@ class ProfesorController extends AbstractController
 
         $usuario->setUsername($profesor->getEmail()); // cambiar método desde el profesor
         $usuario->setProfesor($profesor); // Idem
-        $usuario->setRol('ROLE_PROFESOR'); // seteo el nombre del rol, para podes acceder a las rutas
+        $usuario->setRolPorDefecto('ROLE_PROFESOR'); // seteo el nombre del rol, para podes acceder a las rutas
         $profesor->setUsuario($usuario);
         // $this->correoService->enviarCorreoCreacionProfesor($email, $nombre, $password);
 
