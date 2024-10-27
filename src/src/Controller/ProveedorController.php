@@ -25,13 +25,16 @@ class ProveedorController extends AbstractController {
     }
 
     /**
-     * @Route("/proveedor", name="app_get_proveedor", methods={"GET"})
-     */
-    public function getProveedor(Request $request, ManagerRegistry $doctrine): Response
+     * @Route("/proveedor/{id}", name="app_get_proveedor_by_id", methods={"GET"})
+    */
+    public function getProveedor(Request $request,$id, ProveedorRepository $proveedorRepository): Response
     {
-        $proveedoresId = $request->query->get('proveedoresId');
-        $em = $doctrine->getManager();
-        $proveedor = $em->getRepository(Proveedor::class)->findOneById($proveedoresId);
+        $proveedor = $proveedorRepository->findOneById($id);
+        if(!$proveedor){
+            return $this->json([
+                'message' => 'No se ha encontrado el proveedor.',
+            ])->setStatusCode(404);
+        }
         return $this->json($proveedor);
     }
 
@@ -116,5 +119,19 @@ class ProveedorController extends AbstractController {
                 'data' => $proveedor,
             ], 400);
         }
+    }
+
+    /**
+     * @Route("/proveedor/{id}", name="app_get_proveedor_payments", methods={"GET"})
+    */
+    public function getProveedorPayments($id, ProveedorRepository $proveedorRepository): Response
+    {
+        $proveedor = $proveedorRepository->find($id);
+        if(!$proveedor){
+            return $this->json([
+                'message' => 'No se ha encontrado el proveedor.',
+            ])->setStatusCode(404);
+        }
+        return $this->json($proveedor->getPayments());
     }
 }

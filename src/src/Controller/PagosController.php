@@ -194,5 +194,34 @@ class PagosController extends AbstractController
 
         return $this->json(($resp));
     }
+    /**
+     * @Route("/pagos_por_proveedor/{id}", name="app_Pagos_proveedorId", methods={"GET"})
+    */
+    public function getPagosByProveedorId(
+        Request $request,
+        $id,
+        ManagerRegistry $doctrine,
+        ServiceCustomService $cs
+    ): Response
+    {
+
+        $em = $doctrine->getManager();
+
+        $pagos = $em->getRepository( Pagos::class )->findBy(['proveedor' => $id]);
+
+        $objPagos = array();
+        foreach($pagos as $pago){
+
+           array_push($objPagos, array(
+            "nombreProveedor" => $pago->getProveedor() ? $pago->getProveedor()->getNombre() : "",
+            "monto" => $pago->getMonto(), // = monto
+            "fecha" => $cs->getFormattedDate($pago->getFecha()),
+            "motivo" => $pago->getMotivo(),
+            'descripcion' => $pago->getDescripcion() 
+            ));
+        }
+
+        return $this->json($objPagos);
+    }
 
 }
