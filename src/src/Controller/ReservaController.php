@@ -121,7 +121,7 @@ class ReservaController extends AbstractController
     /**
      * @Route("/reserva", name="app_alta_reserva", methods={"POST"})
      */
-    public function postReserva(Request $request,ManagerRegistry $doctrine, ServiceCustomService $cs): Response {
+    public function postReserva(Request $request,ManagerRegistry $doctrine, ServiceCustomService $cs, ReservaRepository $reservaRepo): Response {
         $parametros = $request->request->all();
 
         $clienteParam = array(
@@ -138,6 +138,9 @@ class ReservaController extends AbstractController
             "fecha"         =>  new DateTime($parametros['fecha']),
             "hora_ini"      =>  new DateTime($parametros['hora_ini']),
             "hora_fin"      =>  new DateTime($parametros['hora_fin']),
+            // "fecha"         =>  $parametros['fecha'], // Mantén como string
+            // "hora_ini"      =>  $parametros['hora_ini'], // Mantén como string
+            // "hora_fin"      =>  $parametros['hora_fin'], // Mantén como string
             "persona_id"    =>  $persona_id,
             "replica"       => (isset($parametros['replica']) && $parametros['replica'] == 'true') ? true : false,
             "estado_id"     =>  0,
@@ -145,57 +148,69 @@ class ReservaController extends AbstractController
             "tipo"          =>  $parametros['tipo'],
         );
 
-        $em = $doctrine->getManager();
-
-        $reserva = new Reserva(
-            $reservaParam['fecha'],
-            $reservaParam['hora_ini'],
-            $reservaParam['hora_fin'],
-            $reservaParam['persona_id'],
-            $reservaParam['cancha_id'],
-            $reservaParam['tipo'],
-            $reservaParam['replica'],
-            $reservaParam['estado_id']
-        );
-
-        $em->persist($reserva);//el ORM empieza a tracker al objeto
-        $em->flush();//se guarda en la base de datos, por lo que ya tiene un ID
-
-        $procesarReplicas = false;
-
-        if ($reservaParam['persona_id'] != null) {
-            $ids_grupo = explode(',', $reservaParam['grupo']);
-            foreach ($ids_grupo as $cliente_id) {
-                if (is_numeric($cliente_id)) {
-                    $grupo_cliente = new Grupo();
-                    $grupo_cliente->setReservaId($reserva->getId());
-                    $grupo_cliente->setPersonaId($cliente_id);
-                    $em->persist($grupo_cliente);
-                }
-            }
-
-            if ($reservaParam['replica']) $procesarReplicas = true;
-        } else {
-            $alquiler = new Alquiler();
-            $alquiler->setNombre($clienteParam['nombre']);
-            $alquiler->setTelefono($clienteParam['telefono']);
-            $alquiler->setReservaId($reserva->getId());
-            $em->persist($alquiler);
+        $validacion = $reservaRepo->validarReserva($reservaParam);
+        dump($validacion);
+        
+        if (!$validacion['success']) {
+            return $this->json([
+                'rta' => 'error',
+                'detail' => $validacion['message']  // Aquí usas el mensaje de la validación
+            ], $validacion['status_code']);  // Usas el código de estado dinámico
         }
 
-
+        $em = $doctrine->getManager();
+    
+        $reserva = new Reserva(
+                $reservaParam['fecha'],
+                $reservaParam['hora_ini'],
+                $reservaParam['hora_fin'],
+                $reservaParam['persona_id'],
+                $reservaParam['cancha_id'],
+                $reservaParam['tipo'],
+                $reservaParam['replica'],
+                $reservaParam['estado_id']
+            );
+    
+        $em->persist($reserva);//el ORM empieza a tracker al objeto
+        $em->flush();//se guarda en la base de datos, por lo que ya tiene un ID
+    
+        $procesarReplicas = false;
+    
+        if ($reservaParam['persona_id'] != null) {
+            $ids_grupo = explode(',', $reservaParam['grupo']);
+        foreach ($ids_grupo as $cliente_id) {
+            if (is_numeric($cliente_id)) {
+                   $grupo_cliente = new Grupo();
+                   $grupo_cliente->setReservaId($reserva->getId());
+                   $grupo_cliente->setPersonaId($cliente_id);
+                   $em->persist($grupo_cliente);
+                   }
+         }
+    
+        if ($reservaParam['replica']) $procesarReplicas = true;
+            } else {
+                $alquiler = new Alquiler();
+                $alquiler->setNombre($clienteParam['nombre']);
+                $alquiler->setTelefono($clienteParam['telefono']);
+                $alquiler->setReservaId($reserva->getId());
+                $em->persist($alquiler);
+            }
+    
+    
         $em->flush();
-
-
         $cs->replicarReservaNueva($reserva->getId()); //lo hace si esta en true replica
+        // $resp = array();    
+        // $resp['rta'] =  "ok";
+        // $resp['detail'] = "Reserva registrada correctamente";
+    
 
-        $resp = array();
+        // return $this->json($resp); 
+        
+        return $this->json([
+            'rta' => 'ok',
+            'detail' => $validacion['message'] 
+        ], $validacion['status_code']);
 
-        $resp['rta'] =  "ok";
-        $resp['detail'] = "Reserva registrada correctamente";
-
-
-        return $this->json($resp);
     }
 
     /**

@@ -2,10 +2,12 @@
 
 namespace App\Repository;
 
+use Exception;
 use App\Entity\Reserva;
 use App\Entity\PeriodoAusencia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use DateTime;
 
 /**
  * @extends ServiceEntityRepository<Reserva>
@@ -141,6 +143,22 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findReservasBycanchaIdBetweenTime($canchaId, $fecha, DateTime $hora_ini, DateTime $hora_fin): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.cancha_id = :val')
+            ->setParameter('val', $canchaId)
+            ->andWhere('r.fecha = :val1')
+            ->setParameter('val1', $fecha)
+            ->andWhere('r.hora_ini <= :val3')
+            ->setParameter('val3', $hora_ini)
+            ->andWhere('r.hora_fin >= :val4')
+            ->setParameter('val4', $hora_fin)
+            ->orderBy('r.hora_ini', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
@@ -216,6 +234,9 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+
+
+
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
@@ -258,6 +279,35 @@ class ReservaRepository extends ServiceEntityRepository
 
     }
 
+    public function findReservasPorPersonaIdFechaYHora($personaId, $fecha, $horaIni, $horaFin): array 
+    {
+        //  // Obtener los periodos de ausencia del profesor
+        $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
+            ->isProfesorAusente($personaId,$fecha);
+        
+        if ($ausente) {
+            return array();
+        }
+
+        //dd($personaId, $fecha);
+
+        // Crear la consulta base para las reservas
+        $queryBuilder = $this->createQueryBuilder('r')
+        ->andWhere('r.persona_id = :personaId')
+        ->setParameter('personaId', $personaId)
+        ->andWhere('r.fecha = :fecha')
+        ->setParameter('fecha', $fecha)
+        ->andWhere('r.estado_id = :estadoId')
+        ->setParameter('estadoId', 0)
+        ->andWhere('r.hora_ini < :horaFin')
+        ->andWhere('r.hora_fin > :horaIni')
+        ->setParameter('horaIni', $horaIni)
+        ->setParameter('horaFin', $horaFin);
+            
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+
     public function getLastReservaId(): ?int
     {
         $record = $this->createQueryBuilder('r')
@@ -268,6 +318,87 @@ class ReservaRepository extends ServiceEntityRepository
 
         return $record ? $record->getId() : 0;
     }
+
+    public function hasOverlappingReservas($personaId, $fecha, $horaIni, $horaFin): bool
+    {
+        $reservas = $this->createQueryBuilder('r')
+            ->andWhere('r.persona_id = :personaId')
+            ->setParameter('personaId', $personaId)
+            ->andWhere('r.fecha = :fecha')
+            ->setParameter('fecha', $fecha)
+            ->andWhere('r.hora_ini < :horaFin')
+            ->setParameter('horaFin', $horaFin)
+            ->andWhere('r.hora_fin > :horaIni')
+            ->setParameter('horaIni', $horaIni)
+            ->getQuery()
+            ->getResult();
+
+        return count($reservas) > 0; 
+    }
+
+    public function validarReserva(array $reservaParam): array
+    {
+        $result = ['success' => true, 'message' => 'Reserva creada con éxito', 'status_code' => 200];
+    
+        try {
+            // Verificar si las claves existen
+            if (!isset($reservaParam['fecha'], $reservaParam['hora_ini'], $reservaParam['hora_fin'])) {
+                throw new Exception('Faltan parámetros necesarios para la reserva.');
+            }
+    
+            // Obtener la hora actual
+            $horaActual = new DateTime();
+    
+            // Convertir fecha y horas a objetos DateTime
+            $fechaReserva = $reservaParam['fecha'] instanceof DateTime ? $reservaParam['fecha'] : new DateTime($reservaParam['fecha']);
+            $horaIni = $reservaParam['hora_ini'] instanceof DateTime ? $reservaParam['hora_ini'] : new DateTime($reservaParam['hora_ini']);
+            $horaFin = $reservaParam['hora_fin'] instanceof DateTime ? $reservaParam['hora_fin'] : new DateTime($reservaParam['hora_fin']);
+    
+            // Crear objeto DateTime para la hora de inicio y fin de la reserva
+            $fechaHoraIniReserva = new DateTime($fechaReserva->format('Y-m-d') . ' ' . $horaIni->format('H:i:s'));
+            $fechaHoraFinReserva = new DateTime($fechaReserva->format('Y-m-d') . ' ' . $horaFin->format('H:i:s'));
+    
+            // Validar que la fecha y hora sean futuras
+            if ($fechaHoraIniReserva <= $horaActual) {
+                $result['success'] = false;
+                $result['message'] = 'La fecha y hora de la reserva deben ser futuras.';
+                $result['status_code'] = 400;
+                return $result;
+            }
+        } catch (Exception $e) {
+            // Manejar la excepción
+            $result['success'] = false;
+            $result['message'] = 'Error al procesar la reserva: ' . $e->getMessage();
+            $result['status_code'] = 500; // Código de error interno
+            return $result;
+        }
+        $reservasExistentes = $this->findReservasBycanchaIdBetweenTime($reservaParam['cancha_id'], $reservaParam['fecha'], $horaIni, $horaFin);
+        // // Validar si la cancha ya está reservada en la fecha/hora
+        if (count($reservasExistentes) > 0) {
+            $result['success'] = false;
+            $result['message'] = 'La cancha ya está reservada en ese horario.';
+            $result['status_code'] = 401;
+            return $result;
+        }
+        // Validar si la persona ya tiene una reserva en el mismo horario
+        // Descomentar esto si se necesita esta validación
+        /*
+        if ($this->hasOverlappingReservas($reservaParam['persona_id'], $reservaParam['fecha'], $reservaParam['hora_ini'], $reservaParam['hora_fin'])) {
+            $result['success'] = false;
+            $result['message'] = 'El profesor ya tiene una reserva en ese horario.';
+            $result['status_code'] = 403;
+            return $result;
+        }
+        */
+    
+        // Otras validaciones relacionadas con la base de datos
+        return $result;
+
+    }
+
+    
+    
+
     //  Agregar condiciones para filtrar solapamientos
     //  if ($periodosAusencia) {
     //     $notInAbsencePeriod = $queryBuilder->expr()->andX();
