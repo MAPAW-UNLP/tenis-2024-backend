@@ -44,7 +44,6 @@ class Cliente
     /**
      * @ORM\OneToMany(targetEntity="Cobro", mappedBy="cliente")
     */
-    /** @Ignore() */
     private $cobros;
 
     public function __construct()
