@@ -144,20 +144,22 @@ class ReservaRepository extends ServiceEntityRepository
     }
 
     public function findReservasBycanchaIdBetweenTime($canchaId, $fecha, DateTime $hora_ini, DateTime $hora_fin): array
-    {
-        return $this->createQueryBuilder('r')
-            ->andWhere('r.cancha_id = :val')
-            ->setParameter('val', $canchaId)
-            ->andWhere('r.fecha = :val1')
-            ->setParameter('val1', $fecha)
-            ->andWhere('r.hora_ini <= :val3')
-            ->setParameter('val3', $hora_ini)
-            ->andWhere('r.hora_fin >= :val4')
-            ->setParameter('val4', $hora_fin)
-            ->orderBy('r.hora_ini', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
+{
+    return $this->createQueryBuilder('r')
+        ->andWhere('r.cancha_id = :canchaId')
+        ->andWhere('r.fecha = :fecha')
+        ->andWhere('r.estado_id = :estadoId')
+        ->andWhere('r.hora_ini < :horaFin')
+        ->andWhere('r.hora_fin > :horaIni')
+        ->setParameter('canchaId', $canchaId)
+        ->setParameter('fecha', $fecha)
+        ->setParameter('estadoId', 0)
+        ->setParameter('horaIni', $hora_ini->format('H:i:s'))
+        ->setParameter('horaFin', $hora_fin->format('H:i:s'))
+        ->getQuery()
+        ->getResult();
+}
+
 
     /**
      * @return Reserva[] Returns an array of Reserva objects
@@ -273,7 +275,7 @@ class ReservaRepository extends ServiceEntityRepository
             ->andWhere('r.fecha = :fecha')
             ->setParameter('fecha', $fecha)
             ->andWhere('r.estado_id = :estadoId')
-            ->setParameter('estadoId', 0);
+            ->setParameter('estadoId',0);
             
         return $queryBuilder->getQuery()->getResult();
 
@@ -341,12 +343,6 @@ class ReservaRepository extends ServiceEntityRepository
         $result = ['success' => true, 'message' => 'Reserva creada con éxito', 'status_code' => 200];
     
         try {
-            // Verificar si las claves existen
-            if (!isset($reservaParam['fecha'], $reservaParam['hora_ini'], $reservaParam['hora_fin'])) {
-                throw new Exception('Faltan parámetros necesarios para la reserva.');
-            }
-    
-            // Obtener la hora actual
             $horaActual = new DateTime();
     
             // Convertir fecha y horas a objetos DateTime
@@ -372,6 +368,7 @@ class ReservaRepository extends ServiceEntityRepository
             $result['status_code'] = 500; // Código de error interno
             return $result;
         }
+
         $reservasExistentes = $this->findReservasBycanchaIdBetweenTime($reservaParam['cancha_id'], $reservaParam['fecha'], $horaIni, $horaFin);
         // // Validar si la cancha ya está reservada en la fecha/hora
         if (count($reservasExistentes) > 0) {
@@ -380,18 +377,25 @@ class ReservaRepository extends ServiceEntityRepository
             $result['status_code'] = 401;
             return $result;
         }
-        // Validar si la persona ya tiene una reserva en el mismo horario
-        // Descomentar esto si se necesita esta validación
-        /*
-        if ($this->hasOverlappingReservas($reservaParam['persona_id'], $reservaParam['fecha'], $reservaParam['hora_ini'], $reservaParam['hora_fin'])) {
+
+        $reservasDelProfe = $this->findReservasPorPersonaIdFechaYHora($reservaParam['persona_id'], $reservaParam['fecha'], $horaIni, $horaFin);
+        if (count($reservasDelProfe) > 0) {
             $result['success'] = false;
-            $result['message'] = 'El profesor ya tiene una reserva en ese horario.';
+            $result['message'] = 'El profesor ya tiene una clase en ese horario.';
             $result['status_code'] = 403;
             return $result;
         }
-        */
-    
-        // Otras validaciones relacionadas con la base de datos
+
+        $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
+            ->isProfesorAusente($reservaParam['persona_id'],$reservaParam['fecha']);
+
+        if ($ausente){
+            $result['success'] = false;
+            $result['message'] = 'El profesor tiene un periodo de ausencia activo para la fecha seleccionada.';
+            $result['status_code'] = 409;
+            return $result;
+        }
+
         return $result;
 
     }
