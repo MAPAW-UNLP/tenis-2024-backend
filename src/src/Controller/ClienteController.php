@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Cliente;
+use App\Entity\Cancha;
 use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -121,6 +122,38 @@ class ClienteController extends AbstractController
         return $this->json($resp);
     }
 
+    /**
+     * @Route("/cliente/next-clases", methods={"GET"}, name="app_get_next_clases")
+     */
+    public function getNextClases(Request $request, ManagerRegistry $doctrine): Response
+    {
+        $clienteId = $request->query->get('clienteId');
+        $em = $doctrine->getManager();
+        $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
+        
+        if (!$cliente) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "No existe el cliente";
+        } else{
+            $clases = $cliente->getClases();
+            $clases = json_decode(json_encode($clases), true);
+            $clasesFiltradas = array_map(function ($clase) {
+                return [
+                    'id' => $clase->getId(),
+                    'tipo' => $clase->getTipo(),
+                    'importe' => $clase->getImporte(),
+                    'fecha' => $clase->getFecha()->format('Y-m-d'),
+                    'hora_ini' => $clase->getHoraIni()->format('H:i:s'),
+                    'hora_fin' => $clase->getHoraFin()->format('H:i:s'),
+                    'profesor' => $clase->getProfesor()->getNombre(),
+                    'cancha' => $this->getDoctrine()->getRepository( Cancha::class )->findOneById($clase->getCanchaId())->getNombre()
+                ];
+            }, $cliente->getClases()->toArray());
 
+            $resp['rta'] =  "ok";
+            $resp['detail'] = $clasesFiltradas;
+        }
+        return $this->json($resp);
+    }
 
 }
