@@ -148,12 +148,12 @@ class ReservaRepository extends ServiceEntityRepository
     return $this->createQueryBuilder('r')
         ->andWhere('r.cancha_id = :canchaId')
         ->andWhere('r.fecha = :fecha')
-        ->andWhere('r.estado_id = :estadoId')
+       // ->andWhere('r.estado_id = :estadoId')
         ->andWhere('r.hora_ini < :horaFin')
         ->andWhere('r.hora_fin > :horaIni')
         ->setParameter('canchaId', $canchaId)
         ->setParameter('fecha', $fecha)
-        ->setParameter('estadoId', 0)
+        //->setParameter('estadoId', 0)
         ->setParameter('horaIni', $hora_ini->format('H:i:s'))
         ->setParameter('horaFin', $hora_fin->format('H:i:s'))
         ->getQuery()
@@ -273,9 +273,9 @@ class ReservaRepository extends ServiceEntityRepository
             ->andWhere('r.persona_id = :personaId')
             ->setParameter('personaId', $personaId)
             ->andWhere('r.fecha = :fecha')
-            ->setParameter('fecha', $fecha)
-            ->andWhere('r.estado_id = :estadoId')
-            ->setParameter('estadoId',0);
+            ->setParameter('fecha', $fecha);
+           // ->andWhere('r.estado_id = :estadoId')
+            //->setParameter('estadoId',0);
             
         return $queryBuilder->getQuery()->getResult();
 
@@ -299,8 +299,8 @@ class ReservaRepository extends ServiceEntityRepository
         ->setParameter('personaId', $personaId)
         ->andWhere('r.fecha = :fecha')
         ->setParameter('fecha', $fecha)
-        ->andWhere('r.estado_id = :estadoId')
-        ->setParameter('estadoId', 0)
+       // ->andWhere('r.estado_id = :estadoId')
+       // ->setParameter('estadoId', 0)
         ->andWhere('r.hora_ini < :horaFin')
         ->andWhere('r.hora_fin > :horaIni')
         ->setParameter('horaIni', $horaIni)
@@ -349,10 +349,9 @@ class ReservaRepository extends ServiceEntityRepository
             $fechaReserva = $reservaParam['fecha'] instanceof DateTime ? $reservaParam['fecha'] : new DateTime($reservaParam['fecha']);
             $horaIni = $reservaParam['hora_ini'] instanceof DateTime ? $reservaParam['hora_ini'] : new DateTime($reservaParam['hora_ini']);
             $horaFin = $reservaParam['hora_fin'] instanceof DateTime ? $reservaParam['hora_fin'] : new DateTime($reservaParam['hora_fin']);
-    
             // Crear objeto DateTime para la hora de inicio y fin de la reserva
             $fechaHoraIniReserva = new DateTime($fechaReserva->format('Y-m-d') . ' ' . $horaIni->format('H:i:s'));
-            $fechaHoraFinReserva = new DateTime($fechaReserva->format('Y-m-d') . ' ' . $horaFin->format('H:i:s'));
+
     
             // Validar que la fecha y hora sean futuras
             if ($fechaHoraIniReserva <= $horaActual) {
