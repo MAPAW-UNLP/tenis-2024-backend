@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Cliente;
-use App\Entity\Cancha;
 use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
-
+use App\Service\CustomService as ServiceCustomService;
 
 
 /**
@@ -125,9 +124,11 @@ class ClienteController extends AbstractController
     /**
      * @Route("/cliente/next-clases", methods={"GET"}, name="app_get_next_clases")
      */
-    public function getNextClases(Request $request, ManagerRegistry $doctrine): Response
+    public function getNextClases(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
     {
         $clienteId = $request->query->get('clienteId');
+        $startDate = new \DateTime($request->query->get('startDate'));
+
         $em = $doctrine->getManager();
         $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
         
@@ -135,23 +136,17 @@ class ClienteController extends AbstractController
             $resp['rta'] =  "error";
             $resp['detail'] = "No existe el cliente";
         } else{
-            $clases = $cliente->getClases();
-            $clases = json_decode(json_encode($clases), true);
-            $clasesFiltradas = array_map(function ($clase) {
-                return [
-                    'id' => $clase->getId(),
-                    'tipo' => $clase->getTipo(),
-                    'importe' => $clase->getImporte(),
-                    'fecha' => $clase->getFecha()->format('Y-m-d'),
-                    'hora_ini' => $clase->getHoraIni()->format('H:i:s'),
-                    'hora_fin' => $clase->getHoraFin()->format('H:i:s'),
-                    'profesor' => $clase->getProfesor()->getNombre(),
-                    'cancha' => $this->getDoctrine()->getRepository( Cancha::class )->findOneById($clase->getCanchaId())->getNombre()
-                ];
-            }, $cliente->getClases()->toArray());
-
-            $resp['rta'] =  "ok";
-            $resp['detail'] = $clasesFiltradas;
+            $today = new \DateTime();
+            $today->setTime(0, 0);
+            if($startDate < $today){
+                $resp['rta'] =  "error";
+                $resp['detail'] = "La fecha no debe ser anterior a hoy";
+            }else{
+                $endDate = (clone $startDate)->modify('+6 days');
+                $clasesFormateadas = $cs->getNextClasesOfCliente($startDate, $endDate, $cliente);
+                $resp['rta'] =  "ok";
+                $resp['detail'] = $clasesFormateadas;
+            }
         }
         return $this->json($resp);
     }

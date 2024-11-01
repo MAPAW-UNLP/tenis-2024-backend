@@ -59,6 +59,22 @@ class ClasesRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+    * @return Clases[] Returns an array of Clases objects
+    */
+    public function findClasesBetweenStartDateAndEndDate(\DateTime $startDate, \DateTime $endDate, $cliente)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.cliente = :cliente')
+            ->andWhere('c.fecha BETWEEN :startDate AND :endDate')
+            ->setParameter('cliente', $cliente)
+            ->setParameter('startDate', $startDate->format('Y-m-d'))
+            ->setParameter('endDate', $endDate->format('Y-m-d'))
+            ->orderBy('c.fecha', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Clases[] Returns an array of Clases objects
 //     */

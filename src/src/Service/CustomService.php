@@ -528,5 +528,21 @@ class CustomService
 
     }
 
+    public function getNextClasesOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente){
+        $clases = $this->em->getRepository( Clases::class )->findClasesBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
+        $clasesFormateadas = array_map(function ($clase) {
+            return [
+                'id' => $clase->getId(),
+                'tipo' => $clase->getTipo(),
+                'importe' => $clase->getImporte(),
+                'fecha' => $clase->getFecha()->format('Y-m-d'),
+                'hora_ini' => $clase->getHoraIni()->format('H:i:s'),
+                'hora_fin' => $clase->getHoraFin()->format('H:i:s'),
+                'profesor' => $clase->getProfesor()->getNombre(),
+                'cancha' => $this->em->getRepository( Cancha::class )->findOneById($clase->getCanchaId())->getNombre()
+            ];
+        }, $clases);
+        return $clasesFormateadas;
+    }
 
 }
