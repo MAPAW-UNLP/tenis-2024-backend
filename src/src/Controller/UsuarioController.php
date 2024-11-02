@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ConstanciaMantenimiento;
 use App\Entity\Usuario;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -9,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\CustomService as ServiceCustomService;
-
+use App\Service\MantenimientoService;
 
     /**
      * @Route(path="/api")
@@ -32,7 +33,8 @@ class UsuarioController extends AbstractController
     public function checkLogin(
         Request $request, 
         ManagerRegistry $doctrine ,
-        ServiceCustomService $cs): Response
+        ServiceCustomService $cs,
+        MantenimientoService $mantenimiento): Response
     {
 
         // $user = $request->request->get('user');
@@ -55,8 +57,9 @@ class UsuarioController extends AbstractController
             );
         } else {
 
-            $cs->procesamientoInicial();
-
+            //$cs->procesamientoInicial();
+            $mantenimiento->realizarMantenimiento();
+            
             $userDB = array(
                 "rta" => "ok",
                 "detail" => [
