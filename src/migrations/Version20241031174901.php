@@ -27,15 +27,15 @@ final class Version20241031174901 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_67CBBF10E52BD977 ON clases (profesor_id)');
 
         // Crear una cancha
-        $this->addSql('INSERT INTO cancha (tipo, nombre) values ("pasto", "Cancha 1")');
+        $this->addSql('INSERT INTO cancha (tipo, nombre) values ("Hierba", "Cancha 1")');
         $this->addSql("SET @canchaId = (SELECT id FROM cancha WHERE nombre = 'Cancha 1')");
 
         // Asignar clases existentes a cliente y profesor
         $this->addSql("SET @clienteId = (SELECT id FROM usuario WHERE username = 'cliente')");
         $this->addSql("SET @profeId = (SELECT id FROM usuario WHERE username = 'profe')");
 
-        $this->addSql('UPDATE clases SET cliente_id = @clienteId, profesor_id = @profeId, cancha_id = @canchaId, fecha = \'2024-11-01\', hora_ini = \'09:00:00\', hora_fin = \'10:00:00\' WHERE tipo = \'INDIVIDUAL\' AND importe = 100');
-        $this->addSql('UPDATE clases SET cliente_id = @clienteId, profesor_id = @profeId, cancha_id = @canchaId, fecha = \'2024-11-01\', hora_ini = \'10:00:00\', hora_fin = \'11:00:00\' WHERE tipo = \'GRUPAL\' AND importe = 50');
+        $this->addSql('UPDATE clases SET cliente_id = @clienteId, profesor_id = @profeId, cancha_id = @canchaId, fecha = \'2024-12-01\', hora_ini = \'09:00:00\', hora_fin = \'10:00:00\' WHERE tipo = \'INDIVIDUAL\' AND importe = 100');
+        $this->addSql('UPDATE clases SET cliente_id = @clienteId, profesor_id = @profeId, cancha_id = @canchaId, fecha = \'2024-12-01\', hora_ini = \'10:00:00\', hora_fin = \'11:00:00\' WHERE tipo = \'GRUPAL\' AND importe = 50');
 
     }
 

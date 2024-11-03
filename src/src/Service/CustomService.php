@@ -530,8 +530,44 @@ class CustomService
 
     public function getNextClasesOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente){
         $clases = $this->em->getRepository( Clases::class )->findClasesBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
-        $clasesFormateadas = array_map(function ($clase) {
-            return [
+        $clasesPorDia = [
+            'domingo' => [],
+            'lunes' => [],
+            'martes' => [],
+            'miércoles' => [],
+            'jueves' => [],
+            'viernes' => [],
+            'sábado' => []
+        ];
+    
+        foreach ($clases as $clase) {
+            $dia = $clase->getFecha()->format('w'); // 'w' devuelve el día de la semana (0=domingo, 6=sábado)
+            $diaSemana = '';
+            switch ($dia) {
+                case 0:
+                    $diaSemana = 'domingo';
+                    break;
+                case 1:
+                    $diaSemana = 'lunes';
+                    break;
+                case 2:
+                    $diaSemana = 'martes';
+                    break;
+                case 3:
+                    $diaSemana = 'miércoles';
+                    break;
+                case 4:
+                    $diaSemana = 'jueves';
+                    break;
+                case 5:
+                    $diaSemana = 'viernes';
+                    break;
+                case 6:
+                    $diaSemana = 'sábado';
+                    break;
+            }
+    
+            $claseFormateada = [
                 'id' => $clase->getId(),
                 'tipo' => $clase->getTipo(),
                 'importe' => $clase->getImporte(),
@@ -539,10 +575,13 @@ class CustomService
                 'hora_ini' => $clase->getHoraIni()->format('H:i:s'),
                 'hora_fin' => $clase->getHoraFin()->format('H:i:s'),
                 'profesor' => $clase->getProfesor()->getNombre(),
-                'cancha' => $this->em->getRepository( Cancha::class )->findOneById($clase->getCanchaId())->getNombre()
+                'cancha' => $this->em->getRepository(Cancha::class)->findOneById($clase->getCanchaId())->getNombre()
             ];
-        }, $clases);
-        return $clasesFormateadas;
+    
+            $clasesPorDia[$diaSemana][] = $claseFormateada;
+        }
+    
+        return $clasesPorDia;
     }
 
 }
