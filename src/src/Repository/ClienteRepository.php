@@ -38,7 +38,7 @@ class ClienteRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-    public function findOneById($id): ? Alumno
+    public function findOneById($id): ? Cliente
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.id = :val')
