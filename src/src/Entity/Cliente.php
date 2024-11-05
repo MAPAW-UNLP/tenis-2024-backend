@@ -118,6 +118,16 @@ class Cliente
         return $this;
     }
 
+    public function toArrayAsociativo(): array{
+        return array(
+            "id"    => $this->getId(),
+            "nombre"    => $this->getNombre(),
+            "telefono"  => $this->getTelefono(),
+            "fechanac"  => $this->getFechaNac() ? $this->getFechaNac() : '',
+            "saldo"     => 0,
+        );
+    }
+
     /** @Ignore() */
     public function getUsuario(): ?Usuario
     {

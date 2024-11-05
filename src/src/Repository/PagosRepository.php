@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Pagos;
+use App\Entity\Profesor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -74,6 +75,26 @@ class PagosRepository extends ServiceEntityRepository
             ->setParameter('ultimoDia', $ultimoDia) // Corregido aquí
             ->getQuery()
             ->getResult();
+    }
+
+    public function registrarPagoProfesor($profesor, $motivo, $monto, $descripcion, $fecha,
+        ManagerRegistry $doctrine)
+    {
+        $pago = new Pagos($motivo, $monto, $descripcion, $fecha);
+        $profesor->addPago($pago);
+        $pago->setProfesor($profesor);
+
+        $this->$doctrine->getManager()->persist($pago);
+        $this->$doctrine->getManager()->persist($profesor);
+        $this->$doctrine->getManager()->flush();
+    }
+
+    public function registrarPago($motivo, $monto, $descripcion, $fecha,
+        ManagerRegistry $doctrine)
+    {
+        $pago = new Pagos($motivo, $monto, $descripcion, $fecha);
+        $this->$doctrine->getManager()->persist($pago);
+        $this->$doctrine->getManager()->flush();
     }
 
 

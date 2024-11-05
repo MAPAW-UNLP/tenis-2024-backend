@@ -272,6 +272,14 @@ class BalanzaController extends AbstractController
         return new JsonResponse($responseData);
     }
 
+    private function totalMontos($collection){
+        $total = 0;
+        foreach ($collection as $item) {
+            $total += $item->getMonto();
+        }
+        return $total;
+
+    }
 
     // private function obtenerDatos($em, $entidad, $campo, $fechaDesde, $fechaHasta, $descripcion, $cs){
 
