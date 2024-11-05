@@ -467,6 +467,41 @@ class ReservaController extends AbstractController
         return $this->json($resp);
     }
 
+ /**
+ * @Route("/suspender_reserva/{reserva_id}", name="suspender_reserva", methods={"PUT"})
+ */
+public function suspenderReserva(int $reserva_id, ManagerRegistry $doctrine): Response
+{
+    $em = $doctrine->getManager();
+    $resp = [];
+
+    $reserva = $em->getRepository(Reserva::class)->find($reserva_id);
+
+    if (!$reserva) {
+        return $this->json([
+            'rta' => 'error',
+            'detail' => 'Reserva no encontrada'
+        ], Response::HTTP_NOT_FOUND);
+    }
+
+    if ($reserva->getEstadoId() != 1) {
+        $reserva->setEstadoId(1);
+        $em->flush();
+        $resp = [
+            'rta' => 'ok',
+            'detail' => 'Clase suspendida correctamente'
+        ];
+    } else {
+        $resp = [
+            'rta' => 'error',
+            'detail' => 'La clase ya está suspendida'
+        ];
+    }
+
+    return $this->json($resp);
+}
+
+
     /**
      * @Route("/clase_reserva", name="mod_clase_reserva", methods={"PUT"})
      */
