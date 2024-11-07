@@ -48,9 +48,16 @@ class Profesor
     */
     private $pagos;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Clases", mappedBy="profesor")
+    */
+    private $clases;
+
+
     public function __construct()
     {
         $this->pagos = new ArrayCollection();
+        $this->clases = new ArrayCollection();
     }
 
     
@@ -124,4 +131,19 @@ class Profesor
         return $this;
     }
 
+    /** @Ignore() */
+    public function getClases(): Collection
+    {
+        return $this->clases;
+    }
+
+    public function addClase(Clases $clase): self
+    {
+        if (!$this->clases->contains($clase)) {
+            $this->clases[] = $clase;
+            // $clase->setProfesor($this);
+        }
+
+        return $this;
+    }
 }

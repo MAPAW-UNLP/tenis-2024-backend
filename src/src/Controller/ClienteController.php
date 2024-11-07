@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
-
+use App\Service\CustomService as ServiceCustomService;
 
 
 /**
@@ -121,6 +121,34 @@ class ClienteController extends AbstractController
         return $this->json($resp);
     }
 
+    /**
+     * @Route("/cliente/next-clases", methods={"GET"}, name="app_get_next_clases")
+     */
+    public function getNextClases(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
+    {
+        $clienteId = $request->query->get('clienteId');
+        $startDate = new \DateTime($request->query->get('startDate'));
 
+        $em = $doctrine->getManager();
+        $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
+        
+        if (!$cliente) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "No existe el cliente";
+        } else{
+            $today = new \DateTime();
+            $today->setTime(0, 0);
+            if($startDate < $today){
+                $resp['rta'] =  "error";
+                $resp['detail'] = "La fecha no debe ser anterior a hoy";
+            }else{
+                $endDate = (clone $startDate)->modify('+6 days');
+                $clasesFormateadas = $cs->getNextClasesOfCliente($startDate, $endDate, $cliente);
+                $resp['rta'] =  "ok";
+                $resp['detail'] = $clasesFormateadas;
+            }
+        }
+        return $this->json($resp);
+    }
 
 }

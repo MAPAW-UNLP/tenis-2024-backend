@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\CustomService as ServiceCustomService;
+use App\Repository\PersonaRepository;
+use App\Service\DateTimeFormatterService;
 
     /**
      * @Route(path="/api")
@@ -124,15 +126,19 @@ class PersonaController extends AbstractController
      * @Route("/persona/clientes", name="app_clientes", methods={"GET"})
      */
     public function getClientes(
-        ServiceCustomService $cs
+        PersonaRepository $personaRepository,
+        DateTimeFormatterService $formatter
     ): Response
     {
-        $clientes = $this->getDoctrine()->getRepository( Persona::class )->findAllClientes();
+        $clientes = $personaRepository->findAllClientes();
         $clientesFormateado=[];
 
         foreach($clientes as $cliente){
-            $clienteFormateado = $cs->formatearCliente($cliente);
-            array_push($clientesFormateado, $clienteFormateado);
+            $clienteFormateado = $cliente->toArrayAsociativo();
+            if ($clienteFormateado["fechanac"] != ""){
+                $clienteFormateado["fechanac"] = $formatter->getFormattedDate($clienteFormateado["fechanac"]);
+            }
+            array_push($alumnosFormateado, $clienteFormateado);
         }
         $resp = array(
             "rta"=> "error",
@@ -146,13 +152,16 @@ class PersonaController extends AbstractController
         }
         return $this->json($resp);
     }
+    
 
     /**
      * @Route("/profesores", name="app_profesores", methods={"GET"})
      */
-    public function getProfesores(): Response
+    public function getProfesores(
+        PersonaRepository $personaRepository
+    ): Response
     {
-        $personas = $this->getDoctrine()->getRepository( Persona::class )->findAllProfesores();
+        $personas = $personaRepository->findAllProfesores();
         return $this->json($personas);
     }
 
