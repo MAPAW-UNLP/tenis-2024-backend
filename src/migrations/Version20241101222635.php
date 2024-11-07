@@ -45,11 +45,21 @@ final class Version20241101222635 extends AbstractMigration
         $this->addSql('ALTER TABLE cobro ADD CONSTRAINT FK_F0A26526DE734E51 FOREIGN KEY (cliente_id) REFERENCES cliente (id)');
         $this->addSql('ALTER TABLE pagos ADD CONSTRAINT FK_DA9B0DFFE52BD977 FOREIGN KEY (profesor_id) REFERENCES profesor (id)');
         $this->addSql('ALTER TABLE profesor ADD CONSTRAINT FK_5B7406D9BF396750 FOREIGN KEY (id) REFERENCES usuario (id)');
+        $this->addSql('ALTER TABLE clases ADD cliente_id INT DEFAULT NULL, ADD profesor_id INT DEFAULT NULL, ADD cancha_id INT DEFAULT NULL, ADD fecha DATE DEFAULT NULL, ADD hora_ini TIME DEFAULT NULL, ADD hora_fin TIME DEFAULT NULL');
+        $this->addSql('ALTER TABLE clases ADD CONSTRAINT FK_67CBBF10DE734E51 FOREIGN KEY (cliente_id) REFERENCES cliente (id)');
+        $this->addSql('ALTER TABLE clases ADD CONSTRAINT FK_67CBBF10E52BD977 FOREIGN KEY (profesor_id) REFERENCES profesor (id)');
+        $this->addSql('CREATE INDEX IDX_67CBBF10DE734E51 ON clases (cliente_id)');
+        $this->addSql('CREATE INDEX IDX_67CBBF10E52BD977 ON clases (profesor_id)');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE clases DROP FOREIGN KEY FK_67CBBF10DE734E51');
+        $this->addSql('ALTER TABLE clases DROP FOREIGN KEY FK_67CBBF10E52BD977');
+        $this->addSql('DROP INDEX IDX_67CBBF10DE734E51 ON clases');
+        $this->addSql('DROP INDEX IDX_67CBBF10E52BD977 ON clases');
+        $this->addSql('ALTER TABLE clases DROP cliente_id, DROP profesor_id, DROP cancha_id, DROP fecha, DROP hora_ini, DROP hora_fin');
         $this->addSql('ALTER TABLE cobro DROP FOREIGN KEY FK_F0A26526DE734E51');
         $this->addSql('ALTER TABLE pagos DROP FOREIGN KEY FK_DA9B0DFFE52BD977');
         $this->addSql('ALTER TABLE administrador DROP FOREIGN KEY FK_44F9A521BF396750');
