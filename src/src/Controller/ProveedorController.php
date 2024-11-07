@@ -120,18 +120,4 @@ class ProveedorController extends AbstractController {
             ], 400);
         }
     }
-
-    /**
-     * @Route("/proveedor/{id}", name="app_get_proveedor_payments", methods={"GET"})
-    */
-    public function getProveedorPayments($id, ProveedorRepository $proveedorRepository): Response
-    {
-        $proveedor = $proveedorRepository->find($id);
-        if(!$proveedor){
-            return $this->json([
-                'message' => 'No se ha encontrado el proveedor.',
-            ])->setStatusCode(404);
-        }
-        return $this->json($proveedor->getPayments());
-    }
 }
