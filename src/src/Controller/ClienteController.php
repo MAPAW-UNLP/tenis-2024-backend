@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Cliente;
+use App\Entity\Usuario;
 use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;

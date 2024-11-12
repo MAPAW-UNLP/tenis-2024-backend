@@ -82,7 +82,7 @@ class CustomService
             "titular" => $personaTitular,
             "replica" => $reserva->isReplica(),
             "estado" => $this->estadosArr[$reserva->getEstadoId()],
-            "tipo" => $reserva->getIdTipoClase() /* != null ? $this->getInfoTipoClase($reserva->getIdTipoClase())[0] : 'ALQUILER'*/,
+            "tipo" => $reserva->getIdTipoClase(),
             "idTipo" => $reserva->getIdTipoClase() != null ? $reserva->getIdTipoClase() : '0',
             "grupo" => $grupo
 
