@@ -151,11 +151,11 @@ class PagosController extends AbstractController
         $fecha =  isset($data->fecha) ? new DateTime($data -> fecha) : null;
 
         if (isset($data->profesorId)){
-            $doctrine->getManager()->getRepository(Pagos::class)
-            ->registrarPagoProfesor($data->profesorId,$motivo, $data[1], $descripcion, $fecha, $doctrine);
-        }
-        else{
-            $doctrine->getManager()->getRepository(Pagos::class)->registrarPago($motivo, $monto, $descripcion, $fecha);
+            $cs->registrarPagoProfesor($data->profesorId, $descripcion, $motivo, $monto, $fecha);
+        } else if(isset($data->idProveedor)){
+            $cs->registrarPagoProveedor($data->idProveedor, $descripcion, $motivo, $monto);
+        } else{
+            $cs->registrarPago($motivo, $monto, $descripcion, $fecha);
         }
         
         $resp = array(

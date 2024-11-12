@@ -16,6 +16,7 @@ use App\Entity\Reserva;
 use App\Entity\Usuario;
 use App\Entity\Cobro;
 use App\Entity\Profesor;
+use App\Entity\Proveedor;
 use App\Service\DateTimeFormatterService;
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
@@ -199,9 +200,25 @@ class CustomService
         return 0;
     }
 
-    /**
-     * @deprecated Este método no debe usarse y debería eliminarse. Fue movido a CobroRepository
-     */
+    public function registrarPagoProveedor($idProveedor, $descripcion, $motivo, $monto)
+    {
+        $proveedor = $this->em->getRepository(Proveedor::class)->find($idProveedor); 
+
+        $pago = new Pagos();
+        //$proveedor->addPago($pago);
+        $pago->setProveedor($proveedor)->setMonto($monto);
+        
+        $pago->setMotivo($motivo);
+        $pago->setDescripcion($descripcion);
+        $fechaPago = new DateTime();
+        $pago->setFecha($fechaPago);
+        $pago->setHora(new DateTime());
+
+        $this->em->persist($pago);
+        $this->em->persist($proveedor);
+        $this->em->flush();
+    }
+
     public function registrarCobro($concepto, $monto, $descripcion, $fecha)
     {
 

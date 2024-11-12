@@ -63,16 +63,24 @@ class Pagos
      * @ORM\Column(type="integer", nullable=true)
      */
     private $cantidad;
+    /**
+     * @ORM\ManyToOne(targetEntity="Proveedor", inversedBy="pagos")
+     * @ORM\JoinColumn(name="proveedor_id", referencedColumnName="id", nullable=true)
+     */
+    private $proveedor;
 
-    public function __construct($motivo = null, $monto = 0, $descripcion = '', $fecha = null) {
-        $this->motivo = $motivo;
-        $this->monto = $monto;
-        $this->descripcion = $descripcion;
-        $this->fecha = $fecha ?: new DateTime(); // Usar la fecha actual si no se proporciona
-        $this->hora = new DateTime(); // Hora actual
+    public function getProveedor(): ?Proveedor
+    {
+        return $this->proveedor;
     }
-    /*$this->em->persist($pago);
-    $this->em->flush();*/
+
+    public function setProveedor(?Proveedor $proveedor): self
+    {
+        $this->proveedor = $proveedor;
+
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
