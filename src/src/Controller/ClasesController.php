@@ -70,6 +70,7 @@ class ClasesController extends AbstractController
         $data = json_decode($request->getContent());
         $idTipoClase = $data->id ?? null;
         $importeClase = $data->importe ?? null;
+        $tipoDeClase = $data->tipo ?? null;
 
         if ($idTipoClase != null && $importeClase > 0 && $importeClase < 100000) {
             $em = $doctrine->getManager();
@@ -77,6 +78,7 @@ class ClasesController extends AbstractController
 
             if ($clase) {
                 $clase->setImporte($importeClase);
+                $clase->setTipo($tipoDeClase);
                 $em->persist($clase);
                 $em->flush();
                 return $this->json(['status' => 'ok', 'message' => 'Importe actualizado exisosamente'], Response::HTTP_OK);
