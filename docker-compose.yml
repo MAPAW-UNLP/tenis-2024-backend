@@ -16,6 +16,11 @@ services:
       - ./php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
     networks:
       - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M  
 
 
   #Nginx Service
@@ -33,6 +38,11 @@ services:
     volumes: 
       - ./src:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
 
   #MySQL Service
   tenis_bd:
@@ -52,6 +62,11 @@ services:
       - app-network
     volumes:
       - database:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
 
 #Docker Networks
 networks:
