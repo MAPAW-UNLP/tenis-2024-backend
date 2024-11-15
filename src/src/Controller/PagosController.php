@@ -68,16 +68,15 @@ class PagosController extends AbstractController
 
 
     /**
-     * @Route("/pagos_por_profesor", name="app_Pagos_profesorId", methods={"GET"})
+     * @Route("/pagos_por_profesor/{profesorId}", name="app_Pagos_profesorId", methods={"GET"})
     */
     public function getPagosByProfesorid(
+        int $profesorId,
         Request $request,
         ManagerRegistry $doctrine,
         ServiceCustomService $cs
     ): Response
     {
-        $profesorId = $request->query->get('profesorId');
-
         // que el profesorId no sea nulo y sea un id válido
         // if ($profesorId === null || !is_numeric($profesorId)) {
         //     return new JsonResponse(['error' => 'ID de profesor no válido'], JsonResponse::HTTP_BAD_REQUEST);
