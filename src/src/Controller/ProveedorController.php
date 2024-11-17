@@ -18,16 +18,16 @@ class ProveedorController extends AbstractController {
     /**
      * @Route("/proveedor", name="app_get_proveedores", methods={"GET"})
      */
-    public function getProveedores(): Response
+    public function getProveedores(ProveedorRepository $proveedorRepository): Response
     {
-        $proveedor = $this->getDoctrine()->getRepository(Proveedor::class)->findAll();
+        $proveedor = $proveedorRepository->findAll();
         return $this->json($proveedor);
     }
 
     /**
      * @Route("/proveedor/{id}", name="app_get_proveedor_by_id", methods={"GET"})
     */
-    public function getProveedor(Request $request,$id, ProveedorRepository $proveedorRepository): Response
+    public function getProveedor($id, ProveedorRepository $proveedorRepository): Response
     {
         $proveedor = $proveedorRepository->findOneById($id);
         if(!$proveedor){
@@ -43,7 +43,7 @@ class ProveedorController extends AbstractController {
      * @Route("/proveedor", name="app_alta_proveedor", methods={"POST"})
     */
     public function addProveedor(Request $request, ManagerRegistry $doctrine,
-     EntityManagerInterface $entityManager): Response
+     EntityManagerInterface $entityManager, ProveedorRepository $proveedorRepository): Response
     {
 
         $data = json_decode($request->getContent());
@@ -53,9 +53,7 @@ class ProveedorController extends AbstractController {
         $proveedor = new Proveedor();
         $proveedor->setNombre($nombre)->setTelefono($telefono);
 
-        $em = $doctrine->getManager();
-        $em->persist($proveedor);
-        $em->flush();
+        $proveedorRepository->add($proveedor, true);
 
         if ($proveedor->getId() > 0) {
             $resp['rta'] = "ok";
