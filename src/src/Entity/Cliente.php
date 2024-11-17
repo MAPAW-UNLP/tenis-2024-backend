@@ -46,9 +46,15 @@ class Cliente
     */
     private $cobros;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Clases", mappedBy="cliente")
+     */
+    private $clases;
+
     public function __construct()
     {
         $this->cobros = new ArrayCollection();
+        $this->clases = new ArrayCollection();
     }
 
 
@@ -111,6 +117,16 @@ class Cliente
         return $this;
     }
 
+    public function toArrayAsociativo(): array{
+        return array(
+            "id"    => $this->getId(),
+            "nombre"    => $this->getNombre(),
+            "telefono"  => $this->getTelefono(),
+            "fechanac"  => $this->getFechaNac() ? $this->getFechaNac() : '',
+            "saldo"     => 0,
+        );
+    }
+
     /** @Ignore() */
     public function getUsuario(): ?Usuario
     {
@@ -124,4 +140,28 @@ class Cliente
         return $this;
     }
 
+    public function getClases(): ?Collection
+    {
+        return $this->clases;
+    }
+
+    public function addClase(Clase $clase): self
+    {
+        if (!$this->clases->contains($clase)) {
+            $this->clases[] = $clase;
+            $clase->setCliente($this);
+        }
+        return $this;
+    }
+
+    public function removeClase(Clase $clase): self
+    {
+        if ($this->clases->removeElement($clase)) {
+            if ($clase->getCliente() === $this) {
+                $clase->setCliente(null);
+            }
+        }
+        return $this;
+    }
+      
 }

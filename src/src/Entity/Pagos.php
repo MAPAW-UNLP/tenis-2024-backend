@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\PagosRepository;
 use Doctrine\ORM\Mapping as ORM;
+use DateTime;
 
 /**
  * @ORM\Entity(repositoryClass=PagosRepository::class)
@@ -62,7 +63,6 @@ class Pagos
      * @ORM\Column(type="integer", nullable=true)
      */
     private $cantidad;
-
     /**
      * @ORM\ManyToOne(targetEntity="Proveedor", inversedBy="pagos")
      * @ORM\JoinColumn(name="proveedor_id", referencedColumnName="id", nullable=true)

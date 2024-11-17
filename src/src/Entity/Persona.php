@@ -123,4 +123,18 @@ class Persona
 
         return $this;
     }
+
+    /*
+    Para reemplazar "getPersonaByPersonaId" de customService luego de que se busque en el repo de Persona
+    */
+    public function toArrayAsociativo(): array
+    {
+        return array(
+            "id" => $this->getId(),
+            "nombre" => $this->getNombre(),
+            "telefono" => $this->getTelefono(),
+            "esalumno" => $this->isEsAlumno(),
+            "visible" => $this->isVisible(),
+        );
+    }
 }

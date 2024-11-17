@@ -15,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\CorreoService;
+use App\Service\CustomService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 /**
@@ -167,26 +168,14 @@ class ProfesorController extends AbstractController
         ReservaRepository $reservaRepository
     ): Response {
         $profesorId = 1;
-
         $fechaInicio = $request->query->get('fechaInicio');
         $fechaFin = $request->query->get('fechaFin');
-
         $primerDia = \DateTime::createFromFormat('Y-m-d', $fechaInicio);
         $ultimoDia = \DateTime::createFromFormat('Y-m-d', $fechaFin);
 
-        $clasesAdeudadas = $reservaRepository->findReservasProfesorSinPagoId($profesorId, $primerDia, $ultimoDia);
-        $cantClases = count($clasesAdeudadas);
-
-        $total = 0;
-        foreach ($clasesAdeudadas as $clase) {
-            $total += $clasesRepository->findOneById($clase->getIdTipoClase())->getImporte();
-        }
-
-        return new JsonResponse([
-            'periodo' => $primerDia->format('d-m-Y') . ' - ' . $ultimoDia->format('d-m-Y'),
-            'cantClases' => $cantClases,
-            'total' => $total,
-        ]);
+        $reservasAdeudadas = $reservaRepository->findReservasProfesorSinPagoId($profesorId, $primerDia, $ultimoDia);
+        
+        return $this->getSaldoProfesorAuxiliar($request,$clasesRepository,$reservasAdeudadas,$primerDia,$ultimoDia);
     }
 
     /**
@@ -198,25 +187,68 @@ class ProfesorController extends AbstractController
         ReservaRepository $reservaRepository
     ): Response {
         $profesorId = 1;
-
         $fechaInicio = $request->query->get('fechaInicio');
         $fechaFin = $request->query->get('fechaFin');
-
         $primerDia = \DateTime::createFromFormat('Y-m-d', $fechaInicio);
         $ultimoDia = \DateTime::createFromFormat('Y-m-d', $fechaFin);
 
-        $clasesAdeudadas = $reservaRepository->findReservasProfesorConPagoId($profesorId, $primerDia, $ultimoDia);
-        $cantClases = count($clasesAdeudadas);
+        $reservasAdeudadas = $reservaRepository->findReservasProfesorConPagoId($profesorId, $primerDia, $ultimoDia);
+        
+        return $this->getSaldoProfesorAuxiliar($request,$clasesRepository,$reservasAdeudadas,$primerDia,$ultimoDia);
+    }
+
+    private function getSaldoProfesorAuxiliar(
+        Request $request,
+        ClasesRepository $clasesRepository,
+        $reservasACobrar,
+        $primerDia,
+        $ultimoDia
+    ): Response {
 
         $total = 0;
-        foreach ($clasesAdeudadas as $clase) {
-            $total += $clasesRepository->findOneById($clase->getIdTipoClase())->getImporte();
+        foreach ($reservasACobrar as $reserva) {
+            $total += $clasesRepository->findOneById($reserva->getIdTipoClase())->getImporte();
         }
 
         return new JsonResponse([
             'periodo' => $primerDia->format('d-m-Y') . ' - ' . $ultimoDia->format('d-m-Y'),
-            'cantClases' => $cantClases,
+            'cantClases' => count($reservasACobrar),
             'total' => $total,
         ]);
     }
+
+ /**
+ * @Route("/clases-profesor", name="app_clases_profesor", methods={"GET"})
+ */
+public function getClasesPorProfesor(Request $request, ReservaRepository $reservaRepository, CustomService $cs): Response
+{
+    $profesorId = $request->query->get('profesor_id'); // ID del profesor
+    $fecha = $request->query->get('fecha'); // Fecha en formato 'Y-m-d'
+    //return $this->json([
+    //     'persona_id' => $profesorId,
+    //     'fecha' => $fecha,
+    // ]);
+
+    // Validar que la fecha sea válida
+    if (!$fecha || !\DateTime::createFromFormat('Y-m-d', $fecha)) {
+        return $this->json([
+            'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+        ], 400);
+    }
+
+    // Obtener las reservas para el profesor en la fecha dada
+    $reservas = $reservaRepository->findReservasPorPersonaIdYFecha($profesorId, $fecha);
+    $reservasFormateadas = [];
+    foreach($reservas as $reserva){
+        array_push($reservasFormateadas,$cs->reservaFromObject($reserva));
+    }
+
+    return $this->json([
+        'message' => 'Clases encontradas.',
+        'data' => $reservasFormateadas,
+    ], 200);
+}
+
+
+
 }

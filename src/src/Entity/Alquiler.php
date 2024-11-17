@@ -54,18 +54,6 @@ class Alquiler
         return $this;
     }
 
-    // public function getApellido(): ?string
-    // {
-    //     return $this->apellido;
-    // }
-
-    // public function setApellido(string $apellido): self
-    // {
-    //     $this->apellido = $apellido;
-
-    //     return $this;
-    // }
-
     public function getTelefono(): ?string
     {
         return $this->telefono;
@@ -88,5 +76,14 @@ class Alquiler
         $this->reserva_id = $reserva_id;
 
         return $this;
+    }
+    
+    public function getCliente(): array
+    {
+        return array(
+            "nombre" => $this->getNombre(),
+            // "apellido" => $cliente->getApellido(),
+            "telefono" => $this->getTelefono(),
+        );
     }
 }

@@ -18,6 +18,7 @@ use App\Service\CustomService as ServiceCustomService;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\ReservaRepository;
 
 /**
  * @Route(path="/api")
@@ -25,6 +26,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ReservaController extends AbstractController
 {
+    //la variable privada y el constructor son nuevos, para aprovechar la inyeccion de dependencias de Synfony
+    private $reservaRepository;
+
+    public function __construct(ReservaRepository $reservaRepository)
+    {
+        $this->reservaRepository = $reservaRepository;
+    }
+
     /**
      * @Route("/reservas", name="app_reservas", methods={"GET"})
      */
@@ -32,6 +41,7 @@ class ReservaController extends AbstractController
         ServiceCustomService $cs
     ): Response {
         $reservas = $this->getDoctrine()->getRepository(Reserva::class)->findAll();
+        
 
         $rtaReservas =  array();
         foreach ($reservas as $reserva) {
@@ -76,7 +86,7 @@ class ReservaController extends AbstractController
                 continue;
             }
 
-            $reservas = $this->getDoctrine()->getRepository(Reserva::class)->findReservasBycanchaIdAndDate($cancha->getId(), $fechaPhp);
+            $reservas = $this->reservaRepository->findReservasBycanchaIdAndDate($cancha->getId(), $fechaPhp);
             // dd($reservas, $cancha->getId(), $fechaPhp);
             $reservasObj = [];
             foreach ($reservas as $reserva) {
@@ -111,32 +121,26 @@ class ReservaController extends AbstractController
     /**
      * @Route("/reserva", name="app_alta_reserva", methods={"POST"})
      */
-    public function postReserva(
-        Request $request,
-        ManagerRegistry $doctrine,
-        ServiceCustomService $cs
-    ): Response {
-
+    public function postReserva(Request $request,ManagerRegistry $doctrine, ServiceCustomService $cs, ReservaRepository $reservaRepo): Response {
         $parametros = $request->request->all();
-
 
         $clienteParam = array(
             "nombre"    => isset($parametros['nombre']) ? $parametros['nombre'] : null,
             "telefono"    => isset($parametros['telefono']) ? $parametros['telefono'] : null,
         );
 
-        $persona_id = null;
-        if (isset($parametros['persona_id'])) {
-            if ((int) $parametros['persona_id'] > 0) {
-                $persona_id = (int) $parametros['persona_id'];
-            }
-        }
+        //$persona_id = null;
+        $persona_id = isset($parametros['persona_id']) ? (int) $parametros['persona_id'] : null;
+
 
         $reservaParam = array(
             "cancha_id"     =>  $parametros['cancha_id'],
             "fecha"         =>  new DateTime($parametros['fecha']),
             "hora_ini"      =>  new DateTime($parametros['hora_ini']),
             "hora_fin"      =>  new DateTime($parametros['hora_fin']),
+            // "fecha"         =>  $parametros['fecha'], // Mantén como string
+            // "hora_ini"      =>  $parametros['hora_ini'], // Mantén como string
+            // "hora_fin"      =>  $parametros['hora_fin'], // Mantén como string
             "persona_id"    =>  $persona_id,
             "replica"       => (isset($parametros['replica']) && $parametros['replica'] == 'true') ? true : false,
             "estado_id"     =>  0,
@@ -144,60 +148,69 @@ class ReservaController extends AbstractController
             "tipo"          =>  $parametros['tipo'],
         );
 
-        $em = $doctrine->getManager();
-
-        $reserva = new Reserva(
-            $reservaParam['fecha'],
-            $reservaParam['hora_ini'],
-            $reservaParam['hora_fin'],
-            $reservaParam['persona_id'],
-            $reservaParam['cancha_id'],
-            $reservaParam['tipo'],
-            $reservaParam['replica'],
-            $reservaParam['estado_id']
-        );
-
-        $reservaId =  $em->persist($reserva);
-
-
-        $lastReservaId = (int) $cs->getLastReservaId();
-        $idReserva = $lastReservaId + 1;
-
-        $procesarReplicas = false;
-
-        if ($reservaParam['persona_id'] != null) {
-            $ids_grupo = explode(',', $reservaParam['grupo']);
-            foreach ($ids_grupo as $cliente_id) {
-                if (is_numeric($cliente_id)) {
-                    $grupo_cliente = new Grupo();
-                    $grupo_cliente->setReservaId($idReserva);
-                    $grupo_cliente->setPersonaId($cliente_id);
-                    $em->persist($grupo_cliente);
-                }
-            }
-
-            if ($reservaParam['replica']) $procesarReplicas = true;
-        } else {
-            $alquiler = new Alquiler();
-            $alquiler->setNombre($clienteParam['nombre']);
-            $alquiler->setTelefono($clienteParam['telefono']);
-            $alquiler->setReservaId($idReserva);
-            $em->persist($alquiler);
+        $validacion = $reservaRepo->validarReserva($reservaParam);
+        dump($validacion);
+        
+        if (!$validacion['success']) {
+            return $this->json([
+                'rta' => 'error',
+                'detail' => $validacion['message']  // Aquí usas el mensaje de la validación
+            ], $validacion['status_code']);  // Usas el código de estado dinámico
         }
 
-
+        $em = $doctrine->getManager();
+    
+        $reserva = new Reserva(
+                $reservaParam['fecha'],
+                $reservaParam['hora_ini'],
+                $reservaParam['hora_fin'],
+                $reservaParam['persona_id'],
+                $reservaParam['cancha_id'],
+                $reservaParam['tipo'],
+                $reservaParam['replica'],
+                $reservaParam['estado_id']
+            );
+    
+        $em->persist($reserva);//el ORM empieza a tracker al objeto
+        $em->flush();//se guarda en la base de datos, por lo que ya tiene un ID
+    
+        $procesarReplicas = false;
+    
+        if ($reservaParam['persona_id'] != null) {
+            $ids_grupo = explode(',', $reservaParam['grupo']);
+        foreach ($ids_grupo as $cliente_id) {
+            if (is_numeric($cliente_id)) {
+                   $grupo_cliente = new Grupo();
+                   $grupo_cliente->setReservaId($reserva->getId());
+                   $grupo_cliente->setPersonaId($cliente_id);
+                   $em->persist($grupo_cliente);
+                   }
+         }
+    
+        if ($reservaParam['replica']) $procesarReplicas = true;
+            } else {
+                $alquiler = new Alquiler();
+                $alquiler->setNombre($clienteParam['nombre']);
+                $alquiler->setTelefono($clienteParam['telefono']);
+                $alquiler->setReservaId($reserva->getId());
+                $em->persist($alquiler);
+            }
+    
+    
         $em->flush();
+        $cs->replicarReservaNueva($reserva->getId()); //lo hace si esta en true replica
+        // $resp = array();    
+        // $resp['rta'] =  "ok";
+        // $resp['detail'] = "Reserva registrada correctamente";
+    
 
+        // return $this->json($resp); 
+        
+        return $this->json([
+            'rta' => 'ok',
+            'detail' => $validacion['message'] 
+        ], $validacion['status_code']);
 
-        $cs->replicarReservaNueva($idReserva); //lo hace si esta en true replica
-
-        $resp = array();
-
-        $resp['rta'] =  "ok";
-        $resp['detail'] = "Reserva registrada correctamente";
-
-
-        return $this->json($resp);
     }
 
     /**
@@ -370,7 +383,7 @@ class ReservaController extends AbstractController
     {
         $profesorId = 1; // TODO: Cambiar por el usuario autenticado del momento
 
-        $reservas = $cs->get_my_reservations($profesorId);
+        $reservas = $this->reservaRepository->findReservasProfesor($profesorId);
 
         $rtaReservas =  array();
         foreach ($reservas as $reserva) {
@@ -427,7 +440,7 @@ class ReservaController extends AbstractController
 
         $em = $doctrine->getManager();
 
-        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reservaId);
+        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
         // dd($grupoViejo, $ids_grupo);
         foreach ($grupoViejo as $personaGrupoViejo) {
             $em->getRepository(Grupo::class)->remove($personaGrupoViejo);
@@ -467,7 +480,7 @@ class ReservaController extends AbstractController
 
         $em = $doctrine->getManager();
 
-        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoIdByReservaId($reservaId);
+        $grupoViejo = $em->getRepository(Grupo::class)->findPersonasGrupoByReservaId($reservaId);
         // dd($grupoViejo, $ids_grupo);
         foreach ($grupoViejo as $personaGrupoViejo) {
             $em->getRepository(Grupo::class)->remove($personaGrupoViejo);
