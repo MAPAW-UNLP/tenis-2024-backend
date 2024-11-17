@@ -132,8 +132,7 @@ class PagosController extends AbstractController
      */
     public function addPago(
         Request $request,
-        ServiceCustomService $cs,
-        ManagerRegistry $doctrine
+        ServiceCustomService $cs
     ): Response
     {
         // PAGO GENERICO SIN PROFESOR
