@@ -3,10 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Pagos;
-use App\Entity\Profesor;
 use App\Repository\PagosRepository;
 use App\Repository\ProfesorRepository;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +12,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Service\CustomService as ServiceCustomService;
 use App\Service\DateTimeFormatterService;
 use DateTime;
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 
     /**
