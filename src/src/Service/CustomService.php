@@ -219,6 +219,39 @@ class CustomService
         $this->em->flush();
     }
 
+    public function registrarPagoProfesor( $idProfesor,$descripcion, $motivo,$monto,$fecha)
+    {
+        $profesor = $this->em->getRepository(Profesor::class)->find($idProfesor); 
+
+        $pago = new Pagos();
+        //$profesor->addPago($pago);
+        $pago->setProfesor($profesor)->setMonto($monto);
+        
+        $pago->setMotivo($motivo);
+        $pago->setDescripcion($descripcion);
+        $pago->setFecha($fecha);
+        $pago->setHora(new DateTime());
+
+        $this->em->persist($pago);
+        $this->em->persist($profesor);
+        $this->em->flush();
+    }
+
+    public function registrarPago($motivo, $monto, $descripcion, $fecha)
+    {
+
+        $pago = new Pagos();
+        $pago->setMonto($monto);
+        
+        $pago->setMotivo($motivo);
+        $pago->setDescripcion($descripcion);
+        $pago->setFecha($fecha);
+        $pago->setHora(new DateTime());
+
+        $this->em->persist($pago);
+        $this->em->flush();
+    }
+
     public function registrarCobro($concepto, $monto, $descripcion, $fecha)
     {
 
