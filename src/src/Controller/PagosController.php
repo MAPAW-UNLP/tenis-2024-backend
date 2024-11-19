@@ -3,15 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Pagos;
-use App\Entity\Profesor;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Repository\PagosRepository;
+use App\Repository\ProfesorRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\CustomService as ServiceCustomService;
+use App\Service\DateTimeFormatterService;
 use DateTime;
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 
     /**
@@ -25,15 +25,12 @@ class PagosController extends AbstractController
      * @Route("/pagos", name="get_pagos", methods={"GET"})
      */
     public function getPagos(
-        Request $request,
-        ManagerRegistry $doctrine,
-        ServiceCustomService $cs
+        DateTimeFormatterService $cs,
+        PagosRepository $pagosRepository
     ): Response
     {
 
-        $em = $doctrine->getManager();
-
-        $pagos = $em->getRepository( Pagos::class )->findAll();
+        $pagos = $pagosRepository->findAll();
 
         $objPagos = array();
 
@@ -72,20 +69,13 @@ class PagosController extends AbstractController
     */
     public function getPagosByProfesorid(
         Request $request,
-        ManagerRegistry $doctrine,
-        ServiceCustomService $cs
+        PagosRepository $pagosRepository,
+        DateTimeFormatterService $cs
     ): Response
     {
         $profesorId = $request->query->get('profesorId');
 
-        // que el profesorId no sea nulo y sea un id válido
-        // if ($profesorId === null || !is_numeric($profesorId)) {
-        //     return new JsonResponse(['error' => 'ID de profesor no válido'], JsonResponse::HTTP_BAD_REQUEST);
-        // }
-
-        $em = $doctrine->getManager();
-
-        $pagos = $em->getRepository( Pagos::class )->findBy(['profesor' => $profesorId]);
+        $pagos = $pagosRepository->findBy(['profesor' => $profesorId]);
 
         $objPagos = array();
         foreach($pagos as $pago){
@@ -109,7 +99,7 @@ class PagosController extends AbstractController
      */
     public function addPagos(
         Request $request,
-        ManagerRegistry $doctrine
+        PagosRepository $pagosRepository
         ): Response
     {
 
@@ -123,7 +113,7 @@ class PagosController extends AbstractController
             $data = explode(':', $pago );
             //data[0] motivo, data[1]  = monto
             $pago = new Pagos($data[0], $data[1], $descripcion, $fecha);
-            $doctrine->getManager()->persist($pago);
+            $pagosRepository->add($pago,true);
         }
     
         $resp = array(
@@ -139,8 +129,7 @@ class PagosController extends AbstractController
      */
     public function addPago(
         Request $request,
-        ServiceCustomService $cs,
-        ManagerRegistry $doctrine
+        ServiceCustomService $cs
     ): Response
     {
         // PAGO GENERICO SIN PROFESOR
@@ -171,14 +160,13 @@ class PagosController extends AbstractController
      */
     public function addPagoProfesor(
         Request $request, 
-        ServiceCustomService $cs,
-        ManagerRegistry $doctrine
-
+        ManagerRegistry $doctrine,
+        ProfesorRepository $profesorRepository
          ): Response
     {
 
         $data = json_decode( $request->getContent());
-        $profesor = $doctrine->getRepository(Profesor::class)->find($data->idProfesor);
+        $profesor = $profesorRepository->find($data->idProfesor);
         $descripcion = $data->descripcion;
         $motivo = $data->motivo;
         $pagos =  explode(',',$data->pagos);
@@ -196,20 +184,18 @@ class PagosController extends AbstractController
 
         return $this->json(($resp));
     }
+
     /**
      * @Route("/pagos_por_proveedor/{id}", name="app_Pagos_proveedorId", methods={"GET"})
     */
     public function getPagosByProveedorId(
-        Request $request,
         $id,
-        ManagerRegistry $doctrine,
-        ServiceCustomService $cs
+        PagosRepository $pagosRepository,
+        DateTimeFormatterService $cs
     ): Response
     {
 
-        $em = $doctrine->getManager();
-
-        $pagos = $em->getRepository( Pagos::class )->findBy(['proveedor' => $id]);
+        $pagos = $pagosRepository->findBy(['proveedor' => $id]);
 
         $objPagos = array();
         foreach($pagos as $pago){
