@@ -149,8 +149,10 @@ class PagosController extends AbstractController
         $motivo = $data -> concepto;
         $fecha =  isset($data->fecha) ? new DateTime($data -> fecha) : null;
 
+
+
         if (isset($data->profesorId)){
-            $cs->registrarPagoProfesor($data->profesorId, $descripcion, $motivo, $monto, $fecha);
+            $cs->registrarPagoProfesor($data->profesorId, $motivo, $monto, $descripcion, $fecha);
         } else if(isset($data->idProveedor)){
             $cs->registrarPagoProveedor($data->idProveedor, $descripcion, $motivo, $monto);
         } else{

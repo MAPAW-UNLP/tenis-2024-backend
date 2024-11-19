@@ -91,17 +91,28 @@ class PagosRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function registrarPagoProfesor($profesor, $motivo, $monto, $descripcion, $fecha,
-        ManagerRegistry $doctrine)
-    {
-        $pago = new Pagos($motivo, $monto, $descripcion, $fecha);
-        $profesor->addPago($pago);
-        $pago->setProfesor($profesor);
+    public function registrarPagoProfesor($profesorId, $motivo, $monto, $descripcion, $fecha, ManagerRegistry $doctrine)
+{
+    // Obtener la entidad Profesor
+    $entityManager = $doctrine->getManager();
+    $profesor = $entityManager->getRepository(Profesor::class)->find($profesorId);
 
-        $this->$doctrine->getManager()->persist($pago);
-        $this->$doctrine->getManager()->persist($profesor);
-        $this->$doctrine->getManager()->flush();
+    // Validar que el profesor exista
+    if (!$profesor) {
+        throw new \Exception("No se encontró un profesor con el ID $profesorId.");
     }
+
+    // Crear el pago y asignarlo al profesor
+    $pago = new Pagos($motivo, $monto, $descripcion, $fecha);
+    $profesor->addPago($pago);
+    $pago->setProfesor($profesor);
+
+    // Persistir los cambios en la base de datos
+    $entityManager->persist($pago);
+    $entityManager->persist($profesor);
+    $entityManager->flush();
+}
+
 
     public function registrarPago($motivo, $monto, $descripcion, $fecha,
         ManagerRegistry $doctrine)
@@ -110,6 +121,8 @@ class PagosRepository extends ServiceEntityRepository
         $this->$doctrine->getManager()->persist($pago);
         $this->$doctrine->getManager()->flush();
     }
+
+    
 
 
     //    /**
