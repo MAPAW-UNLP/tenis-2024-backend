@@ -298,14 +298,38 @@ class CobroController extends AbstractController
     public function getCobrosCliente(Request $request, ManagerRegistry $doctrine): Response
     {
         $clienteId = $request->query->get('cliente_id');
-        $fechaInicio = $request->query->get('fecha_inicio') ? new \DateTime($request->query->get('fecha_inicio')) : (new \DateTime())->sub(new \DateInterval('P7D'));
-        $fechaFin = $request->query->get('fecha_fin') ? new \DateTime($request->query->get('fecha_fin')) : new \DateTime(); 
-        $concepto = $request->query->get('concepto') ?: ''; 
-        $monto = $request->query->get('monto') ?: 0;
+
+        try {
+            $fechaInicio = $request->query->get('fecha_inicio') 
+                ? new \DateTime($request->query->get('fecha_inicio')) 
+                : (new \DateTime())->sub(new \DateInterval('P7D'));
+        } catch (\Exception $e) {
+            $fechaInicio = (new \DateTime())->sub(new \DateInterval('P7D'));
+        }
+
+        try {
+            $fechaFin = $request->query->get('fecha_fin') 
+                ? new \DateTime($request->query->get('fecha_fin')) 
+                : new \DateTime();
+        } catch (\Exception $e) {
+            $fechaFin = new \DateTime();
+        }
+
+        $concepto = $request->query->get('concepto') ?: '';
+
+        $monto = $request->query->get('monto');
+        if (!is_numeric($monto)) {
+            $monto = 0; 
+        }
+
         $page = $request->query->get('page') ?: 1;
+        if (!is_numeric($page) || $page < 1) {
+            $page = 1; 
+        }
+
         $limit = 10; // Elementos por página.
 
-        if (!$clienteId) {
+        if (!is_numeric($clienteId) || !$clienteId) {
             $resp = array(
                 "rta"=> "error",
                 "detail"=> "No se encontró al cliente"
