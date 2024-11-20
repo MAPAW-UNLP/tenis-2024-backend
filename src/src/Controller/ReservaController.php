@@ -149,7 +149,6 @@ class ReservaController extends AbstractController
         );
 
         $validacion = $reservaRepo->validarReserva($reservaParam);
-        dump($validacion);
         
         if (!$validacion['success']) {
             return $this->json([
