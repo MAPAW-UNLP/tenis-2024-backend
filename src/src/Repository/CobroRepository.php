@@ -67,6 +67,28 @@ class CobroRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($cobro);
         $this->getEntityManager()->flush();
     }
+
+    public function findCobrosByClienteId($clienteId, \DateTime $fechaInicio, DateTime $fechaFin, $concepto, $monto)
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.cliente = :clienteId')
+            ->setParameter('clienteId', $clienteId)
+            ->andWhere('c.fecha BETWEEN :fechaInicio AND :fechaFin')
+            ->setParameter('fechaInicio', $fechaInicio->format('Y-m-d'))
+            ->setParameter('fechaFin', $fechaFin->format('Y-m-d'));
+
+        if ($concepto) {
+            $qb->andWhere('c.concepto LIKE :concepto')
+            ->setParameter('concepto', '%' . $concepto . '%');
+        }
+        if ($monto){
+            $qb->andWhere('c.monto >= :monto') 
+            ->setParameter('monto', $monto);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return Cobro[] Returns an array of Cobro objects
 //     */

@@ -42,3 +42,8 @@ VALUES('INDIVIDUAL', 100, @clienteId, @profeId, @canchaId, '2024-11-07', '08:00:
       ('GRUPAL', 50, @clienteId, @profeId, @canchaId, '2024-11-22', '16:00:00', '17:00:00'),
       ('GRUPAL', 50, @clienteId, @profeId, @canchaId, '2024-11-23', '17:00:00', '18:00:00'),
       ('GRUPAL', 50, @clienteId, @profeId, @canchaId, '2024-11-24', '18:00:00', '19:00:00');
+
+-- crear cobros
+INSERT INTO cobro (monto, fecha, hora, concepto, cliente_id, descripcion)
+VALUES (100.0, "2024-11-18", "18:00:00", "clase x", @clienteId, "Una descripcion"),
+      (400.0, "2024-11-01", "19:00:00", "clase y", @clienteId, "Otra descripcion");

@@ -292,7 +292,52 @@ class CobroController extends AbstractController
         return $this->json(($resp));
     }
     
+    /**
+     * @Route("/cobrosCliente", name="get_cobros_cliente", methods={"GET"})
+     */
+    public function getCobrosCliente(Request $request, ManagerRegistry $doctrine): Response
+    {
+        $clienteId = $request->query->get('cliente_id');
+        $fechaInicio = $request->query->get('fecha_inicio') ? new \DateTime($request->query->get('fecha_inicio')) : (new \DateTime())->sub(new \DateInterval('P7D'));
+        $fechaFin = $request->query->get('fecha_fin') ? new \DateTime($request->query->get('fecha_fin')) : new \DateTime(); 
+        $concepto = $request->query->get('concepto') ?: ''; 
+        $monto = $request->query->get('monto') ?: 0;
 
+        if (!$clienteId) {
+            $resp = array(
+                "rta"=> "error",
+                "detail"=> "No se encontró al cliente"
+            );
+        }
+        else{
+            $em = $doctrine->getManager();
+            $cobros = $em->getRepository(Cobro::class)->findCobrosByClienteId($clienteId, $fechaInicio, $fechaFin, $concepto, $monto);
+            
+            $cobrosFormateados = [];
+            foreach ($cobros as $cobro) {
+                
+                $cobroFormateado = [
+                    'id' => $cobro->getId(),
+                    'fecha' => $cobro->getFecha()->format('Y-m-d'),
+                    'concepto' => $cobro->getConcepto(),
+                    'importe' => $cobro->getMonto()
+                ];
+    
+                $cobrosFormateados[] = $cobroFormateado;
+            }
 
+            $resp = array(
+                "rta"=> "ok",
+                "detail"=> $cobrosFormateados, 
+                "id"=>$clienteId,
+                "ini"=>$fechaInicio,
+                "fin"=>$fechaFin,
+                "concepto"=>$concepto,
+                "monto"=>$monto
+            );
+        }
+
+        return $this->json(($resp));
+    }
 
 }
