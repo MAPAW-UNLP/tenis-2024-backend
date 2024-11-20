@@ -45,5 +45,19 @@ VALUES('INDIVIDUAL', 100, @clienteId, @profeId, @canchaId, '2024-11-07', '08:00:
 
 -- crear cobros
 INSERT INTO cobro (monto, fecha, hora, concepto, cliente_id, descripcion)
-VALUES (100.0, "2024-11-18", "18:00:00", "clase x", @clienteId, "Una descripcion"),
+VALUES (100.0, "2024-11-18", "18:00:00", "clase a", @clienteId, "Una descripcion"),
+       (1000.0, "2024-10-19", "10:00:00", "clase b", @clienteId, "Una descripcion"),
+       (2000.0, "2024-10-20", "18:00:00", "clase c", @clienteId, "Una descripcion"),
+       (3000.0, "2024-10-21", "10:00:00", "clase d", @clienteId, "Una descripcion"),
+       (500.0, "2024-10-22", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (600.0, "2024-10-23", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (700.0, "2024-10-24", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (800.0, "2024-10-25", "10:00:00", "pago x", @clienteId, "Una descripcion"),
+       (900.0, "2024-10-18", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (1000.0, "2024-10-18", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (1000.0, "2024-09-18", "10:00:00", "pago x", @clienteId, "Una descripcion"),
+       (1000.0, "2024-09-18", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (400.0, "2024-09-18", "18:00:00", "clase x", @clienteId, "Una descripcion"),
+       (100.0, "2024-09-18", "18:00:00", "clase x", @clienteId, "Una descripcion"),
+       (100.0, "2024-09-18", "18:00:00", "clase x", @clienteId, "Una descripcion"),
       (400.0, "2024-11-01", "19:00:00", "clase y", @clienteId, "Otra descripcion");

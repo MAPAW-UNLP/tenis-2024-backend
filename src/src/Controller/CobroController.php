@@ -302,6 +302,8 @@ class CobroController extends AbstractController
         $fechaFin = $request->query->get('fecha_fin') ? new \DateTime($request->query->get('fecha_fin')) : new \DateTime(); 
         $concepto = $request->query->get('concepto') ?: ''; 
         $monto = $request->query->get('monto') ?: 0;
+        $page = $request->query->get('page') ?: 1;
+        $limit = 10; // Elementos por página.
 
         if (!$clienteId) {
             $resp = array(
@@ -311,10 +313,10 @@ class CobroController extends AbstractController
         }
         else{
             $em = $doctrine->getManager();
-            $cobros = $em->getRepository(Cobro::class)->findCobrosByClienteId($clienteId, $fechaInicio, $fechaFin, $concepto, $monto);
+            $cobros = $em->getRepository(Cobro::class)->findCobrosByClienteId($clienteId, $fechaInicio, $fechaFin, $concepto, $monto, $page, $limit);
             
             $cobrosFormateados = [];
-            foreach ($cobros as $cobro) {
+            foreach ($cobros['data'] as $cobro) {
                 
                 $cobroFormateado = [
                     'id' => $cobro->getId(),
@@ -328,12 +330,15 @@ class CobroController extends AbstractController
 
             $resp = array(
                 "rta"=> "ok",
-                "detail"=> $cobrosFormateados, 
-                "id"=>$clienteId,
-                "ini"=>$fechaInicio,
-                "fin"=>$fechaFin,
-                "concepto"=>$concepto,
-                "monto"=>$monto
+                "detail"=> 
+                    [
+                        "pagos" => $cobrosFormateados,
+                        "page" => $cobros['page'],
+                        'total' => $cobros['total'],
+                        'totalPages' => $cobros['totalPages'],
+                        'nextPage' => $cobros['nextPage'],
+                        'previousPage' => $cobros['previousPage'],
+                    ]
             );
         }
 
