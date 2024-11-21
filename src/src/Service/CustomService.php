@@ -10,7 +10,6 @@ use App\Entity\Cancha;
 use App\Entity\Clases;
 use App\Entity\Grupo;
 use App\Entity\Pagos;
-use App\Entity\Persona;
 use App\Entity\Replicas;
 use App\Entity\Reserva;
 use App\Entity\Usuario;
@@ -49,9 +48,9 @@ class CustomService
         $clienteRepository = $this->em->getRepository(Cliente::class);
 
 
-        if ($reserva->getPersonaId() !== null && $reserva->getPersonaId() != 0) {
+        if ($reserva->getProfesorId() !== null && $reserva->getProfesorId() != 0) {
             // Obtener el persona_id desde el objeto Reserva
-            $profesorId = $reserva->getPersonaId();
+            $profesorId = $reserva->getProfesorId();
 
             // Usar el personaId para buscar la persona correspondiente
             $personaTitular = $this->em->getRepository(Profesor::class)->findOneById($profesorId);
@@ -60,7 +59,7 @@ class CustomService
 
             if (count($grupoPersonasId) > 0) {
                 foreach ($grupoPersonasId as $persona) {
-                    $miembro = $clienteRepository->findOneById($persona->getPersonaId())->toArrayAsociativo();
+                    $miembro = $clienteRepository->findOneById($persona->getClienteId())->toArrayAsociativo();
                     array_push($grupo, $miembro);
                 }
             }
@@ -78,7 +77,7 @@ class CustomService
             "fecha" => $this->formatter->getFormattedDate($reserva->getFecha()),
             "horaIni" => $this->formatter->getFormattedTime($reserva->getHoraIni()),
             "horaFin" => $this->formatter->getFormattedTime($reserva->getHoraFin()),
-            "profesorId" => $reserva->getPersonaId(),
+            "profesorId" => $reserva->getProfesorId(),
             "titular" => $personaTitular,
             "replica" => $reserva->isReplica(),
             "estado" => $this->estadosArr[$reserva->getEstadoId()],
@@ -276,7 +275,7 @@ class CustomService
 
 
                     $pago = new Pagos();
-                    $pago->setIdPersona($personaId->getPersonaId());
+                    $pago->setIdCliente($personaId->getClienteId());
                     $pago->setFecha($reserva->getFecha());
                     $tipoClase = $reserva->getIdTipoClase() != null ? $reserva->getIdTipoClase() : 2;
                     $pago->setIdTipoClase($tipoClase);
@@ -372,7 +371,7 @@ class CustomService
         foreach ($clientes as $cliente_id) {
             $grupo_cliente = new Grupo();
             $grupo_cliente->setReservaId($lastReservaId);
-            $grupo_cliente->setPersonaId($cliente_id);
+            $grupo_cliente->setClienteId($cliente_id);
             $this->em->persist($grupo_cliente);
             $this->em->flush();
         }

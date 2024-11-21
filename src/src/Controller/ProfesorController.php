@@ -247,8 +247,14 @@ public function getClasesPorProfesor(Request $request, ReservaRepository $reserv
         'message' => 'Clases encontradas.',
         'data' => $reservasFormateadas,
     ], 200);
-}
+    }
 
-
+    /**
+     * @Route("/profesores", name="app_profesores", methods={"GET"})
+     */
+    public function getProfesores_Persona(): Response
+    {
+        $profesores = $this->getDoctrine()->getRepository(Profesor::class)->findAll();
+    }
 
 }

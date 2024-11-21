@@ -14,13 +14,13 @@ SET @profeId = (SELECT id FROM usuario WHERE username = 'profe');
 
 -- crear roles
 INSERT INTO administrador (id) VALUES (@adminId);
-INSERT INTO cliente (id, nombre, telefono, fecha_nac) VALUES (@adminId, 'admintenis', '1144445555', '2000-01-01');
+INSERT INTO cliente (id, nombre, telefono, fecha_nac, es_alumno, visible) VALUES (@adminId, 'admintenis', '1144445555', '2000-01-01', true, true);
 INSERT INTO profesor (id, nombre, email, telefono) VALUES (@adminId, 'admintenis', 'admintenis@test.com', '1144445555');
 
 INSERT INTO profesor (id, nombre, email, telefono) VALUES (@profeId, 'profeuno', 'profe1@test.com', '2215559999');
-INSERT INTO cliente (id, nombre, telefono, fecha_nac) VALUES (@profeId, 'profeuno', '2215559999', '1999-10-10');
+INSERT INTO cliente (id, nombre, telefono, fecha_nac, es_alumno, visible) VALUES (@profeId, 'profeuno', '2215559999', '1999-10-10', true, true);
 
-INSERT INTO cliente (id, nombre, telefono, fecha_nac) VALUES (@clienteId, 'cliente', '2217774444', '2000-01-20');
+INSERT INTO cliente (id, nombre, telefono, fecha_nac, es_alumno, visible) VALUES (@clienteId, 'cliente', '2217774444', '2000-01-20', true, true);
 
 -- crear clases
 INSERT INTO clases (tipo, importe, cliente_id, profesor_id, cancha_id, fecha, hora_ini, hora_fin)

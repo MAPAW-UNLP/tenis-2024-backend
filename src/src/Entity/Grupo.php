@@ -25,7 +25,7 @@ class Grupo
     /**
      * @ORM\Column(type="integer")
      */
-    private $persona_id;
+    private $cliente_id;
 
     public function getId(): ?int
     {
@@ -44,14 +44,14 @@ class Grupo
         return $this;
     }
 
-    public function getPersonaId(): ?int
+    public function getClienteId(): ?int
     {
-        return $this->persona_id;
+        return $this->cliente_id;
     }
 
-    public function setPersonaId(int $persona_id): self
+    public function setClienteId(int $cliente_id): self
     {
-        $this->persona_id = $persona_id;
+        $this->cliente_id = $cliente_id;
 
         return $this;
     }

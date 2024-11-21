@@ -51,6 +51,16 @@ class Cliente
      */
     private $clases;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $esAlumno;//esAlumno
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $visible;
+
     public function __construct()
     {
         $this->cobros = new ArrayCollection();
@@ -117,6 +127,9 @@ class Cliente
         return $this;
     }
 
+    /*
+    Para reemplazar "getPersonaByPersonaId" de customService luego de que se busque en el repo de Persona
+    */
     public function toArrayAsociativo(): array{
         return array(
             "id"    => $this->getId(),
@@ -124,6 +137,8 @@ class Cliente
             "telefono"  => $this->getTelefono(),
             "fechanac"  => $this->getFechaNac() ? $this->getFechaNac() : '',
             "saldo"     => 0,
+            "esalumno" => $this->isEsAlumno(),
+            "visible" => $this->isVisible(),
         );
     }
 
@@ -145,7 +160,7 @@ class Cliente
         return $this->clases;
     }
 
-    public function addClase(Clase $clase): self
+    public function addClase(Clases $clase): self
     {
         if (!$this->clases->contains($clase)) {
             $this->clases[] = $clase;
@@ -154,7 +169,7 @@ class Cliente
         return $this;
     }
 
-    public function removeClase(Clase $clase): self
+    public function removeClase(Clases $clase): self
     {
         if ($this->clases->removeElement($clase)) {
             if ($clase->getCliente() === $this) {
@@ -163,5 +178,30 @@ class Cliente
         }
         return $this;
     }
+
+    public function isEsAlumno(): ?bool
+    {
+        return $this->esAlumno;
+    }
+
+    public function setEsAlumno(bool $esAlumno): self
+    {
+        $this->esAlumno = $esAlumno;
+
+        return $this;
+    }
+
+    public function isVisible(): ?bool
+    {
+        return $this->visible;
+    }
+
+    public function setVisible(bool $visible): self
+    {
+        $this->visible = $visible;
+
+        return $this;
+    }
+
       
 }

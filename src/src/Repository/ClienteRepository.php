@@ -47,6 +47,20 @@ class ClienteRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+    /**
+    * @return Cliente[] Returns an array of Cliente objects (clientes)
+    */
+   public function findAllAlumnos(): array
+   {
+       return $this->createQueryBuilder('c')
+           ->andWhere('c.esAlumno = :val')
+           ->setParameter('val', 1)
+           ->orderBy('c.id', 'ASC')
+           ->getQuery()
+           ->getResult()
+       ;
+   }
 //    /**
 //     * @return Cliente[] Returns an array of Cliente objects
 //     */

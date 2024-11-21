@@ -20,7 +20,7 @@ class Cuenta
     /**
      * @ORM\Column(type="integer")
      */
-    private $persona_id;
+    private $cliente_id;
 
     /**
      * @ORM\Column(type="integer")
@@ -37,14 +37,14 @@ class Cuenta
         return $this->id;
     }
 
-    public function getPersonaId(): ?int
+    public function getClienteId(): ?int
     {
-        return $this->persona_id;
+        return $this->cliente_id;
     }
 
-    public function setPersonaId(int $persona_id): self
+    public function setClienteId(int $cliente_id): self
     {
-        $this->persona_id = $persona_id;
+        $this->cliente_id = $cliente_id;
 
         return $this;
     }

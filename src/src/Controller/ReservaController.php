@@ -6,7 +6,6 @@ use DateTime;
 use DateInterval;
 use App\Entity\Grupo;
 use App\Entity\Cancha;
-use App\Entity\Persona;
 use App\Entity\Reserva;
 use App\Entity\Alquiler;
 use Doctrine\Persistence\ManagerRegistry;
@@ -182,7 +181,7 @@ class ReservaController extends AbstractController
             if (is_numeric($cliente_id)) {
                    $grupo_cliente = new Grupo();
                    $grupo_cliente->setReservaId($reserva->getId());
-                   $grupo_cliente->setPersonaId($cliente_id);
+                   $grupo_cliente->setClienteId($cliente_id);
                    $em->persist($grupo_cliente);
                    }
          }
@@ -415,7 +414,7 @@ class ReservaController extends AbstractController
 
         $em = $doctrine->getManager();
         $reserva = $em->getRepository(Reserva::class)->findOneById($reservaId);
-        $reserva->setPersonaId($personaId);
+        $reserva->setProfesorId($personaId);
         $em->persist($reserva);
         $em->flush();
 
@@ -450,7 +449,7 @@ class ReservaController extends AbstractController
             if (is_numeric($cliente_id)) {
                 $grupo_cliente = new Grupo();
                 $grupo_cliente->setReservaId($reservaId);
-                $grupo_cliente->setPersonaId($cliente_id);
+                $grupo_cliente->setClienteId($cliente_id);
                 $em->persist($grupo_cliente);
             }
         }
@@ -525,13 +524,13 @@ public function suspenderReserva(int $reserva_id, ManagerRegistry $doctrine): Re
             if (is_numeric($cliente_id)) {
                 $grupo_cliente = new Grupo();
                 $grupo_cliente->setReservaId($reservaId);
-                $grupo_cliente->setPersonaId($cliente_id);
+                $grupo_cliente->setClienteId($cliente_id);
                 $em->persist($grupo_cliente);
             }
         }
 
         $reserva = $em->getRepository(Reserva::class)->findOneById($reservaId);
-        $reserva->setPersonaId($profesorId);
+        $reserva->setProfesorId($profesorId);
 
         if ($request->get('fecha') != null) {
             $reserva->setFecha(new DateTime($request->get('fecha')));
