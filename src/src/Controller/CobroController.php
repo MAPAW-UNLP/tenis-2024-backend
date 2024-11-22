@@ -302,9 +302,9 @@ class CobroController extends AbstractController
         try {
             $fechaInicio = $request->query->get('fecha_inicio') 
                 ? new \DateTime($request->query->get('fecha_inicio')) 
-                : (new \DateTime())->sub(new \DateInterval('P7D'));
+                : (new \DateTime('2010-10-10'));
         } catch (\Exception $e) {
-            $fechaInicio = (new \DateTime())->sub(new \DateInterval('P7D'));
+            $fechaInicio = new \DateTime('2010-10-10');
         }
 
         try {

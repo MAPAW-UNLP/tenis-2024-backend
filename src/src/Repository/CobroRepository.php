@@ -88,6 +88,8 @@ class CobroRepository extends ServiceEntityRepository
                 ->setParameter('monto', $monto);
         }
 
+        $qb->orderBy('c.fecha', 'DESC');
+
         // Configurar el paginador
         $qb->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit);
