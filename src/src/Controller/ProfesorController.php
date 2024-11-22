@@ -255,6 +255,8 @@ public function getClasesPorProfesor(Request $request, ReservaRepository $reserv
     public function getProfesores_Persona(): Response
     {
         $profesores = $this->getDoctrine()->getRepository(Profesor::class)->findAll();
+
+        return $this->json($profesores);
     }
 
 }

@@ -185,7 +185,7 @@ class CustomService
         $canchaPreferidaId = $reserva->getCanchaId();
 
         if ($canchaRepository->isCanchaDisponibleEnTurno($canchaPreferidaId, $fecha, $reserva->getHoraIni(), $reserva->getHoraFin())) {
-            return $canchaPreferidaId->getCanchaId();
+            return $canchaPreferidaId;
         }
 
         $canchasDisponibles = $canchaRepository->canchasDisponiblesEnFechaYTuno($fecha, $reserva->getHoraIni(), $reserva->getHoraFin());
@@ -280,6 +280,9 @@ class CustomService
                     $tipoClase = $reserva->getIdTipoClase() != null ? $reserva->getIdTipoClase() : 2;
                     $pago->setIdTipoClase($tipoClase);
                     $pago->setCantidad(-1);
+                    $pago->setMonto(0);//Se debe definir un monto
+                    $pago->setHora(new \DateTime()); //Se debe definir una hora
+                    $pago->setMotivo("Default"); //Se debe definir un motivo
                     $this->em->persist($pago);
                 }
             }

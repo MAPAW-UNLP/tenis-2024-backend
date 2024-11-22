@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20241120192911 extends AbstractMigration
+final class Version20241122014534 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -34,8 +34,8 @@ final class Version20241120192911 extends AbstractMigration
         $this->addSql('CREATE TABLE item_alquiler (id INT AUTO_INCREMENT NOT NULL, description VARCHAR(50) NOT NULL, importe INT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE pagos (id INT AUTO_INCREMENT NOT NULL, profesor_id INT DEFAULT NULL, proveedor_id INT DEFAULT NULL, id_cliente INT DEFAULT NULL, id_tipo_clase INT DEFAULT NULL, monto DOUBLE PRECISION NOT NULL, fecha DATE NOT NULL, hora TIME NOT NULL, motivo VARCHAR(255) NOT NULL, descripcion VARCHAR(100) DEFAULT NULL, cantidad INT DEFAULT NULL, INDEX IDX_DA9B0DFFE52BD977 (profesor_id), INDEX IDX_DA9B0DFFCB305D73 (proveedor_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE periodo_ausencia (id INT AUTO_INCREMENT NOT NULL, fecha_ini DATE NOT NULL, fecha_fin DATE NOT NULL, motivo LONGTEXT NOT NULL, profesor_id INT NOT NULL, estado_id INT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE persona (id INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(50) NOT NULL, telefono VARCHAR(15) NOT NULL, fechanac DATE DEFAULT NULL, escliente TINYINT(1) NOT NULL, visible TINYINT(1) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE profesor (id INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(50) NOT NULL, email VARCHAR(100) NOT NULL, telefono VARCHAR(30) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE proveedor (id INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(30) NOT NULL, telefono VARCHAR(15) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE replicas (id INT AUTO_INCREMENT NOT NULL, id_reserva INT NOT NULL, ultimo_mes INT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE reserva (id INT AUTO_INCREMENT NOT NULL, cancha_id INT NOT NULL, fecha DATE NOT NULL, hora_ini TIME NOT NULL, hora_fin TIME NOT NULL, profesor_id INT DEFAULT NULL, replica TINYINT(1) NOT NULL, estado_id INT NOT NULL, id_tipo_clase INT DEFAULT NULL, pago_id INT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE suspension_clase (id INT AUTO_INCREMENT NOT NULL, fecha DATE NOT NULL, hora TIME NOT NULL, profesor_id INT NOT NULL, estado_id INT NOT NULL, reserva_id INT NOT NULL, motivo LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -58,6 +58,7 @@ final class Version20241120192911 extends AbstractMigration
         $this->addSql('ALTER TABLE cobro DROP FOREIGN KEY FK_F0A26526DE734E51');
         $this->addSql('ALTER TABLE clases DROP FOREIGN KEY FK_67CBBF10E52BD977');
         $this->addSql('ALTER TABLE pagos DROP FOREIGN KEY FK_DA9B0DFFE52BD977');
+        $this->addSql('ALTER TABLE pagos DROP FOREIGN KEY FK_DA9B0DFFCB305D73');
         $this->addSql('ALTER TABLE administrador DROP FOREIGN KEY FK_44F9A521BF396750');
         $this->addSql('ALTER TABLE cliente DROP FOREIGN KEY FK_F41C9B25BF396750');
         $this->addSql('ALTER TABLE profesor DROP FOREIGN KEY FK_5B7406D9BF396750');
@@ -75,8 +76,8 @@ final class Version20241120192911 extends AbstractMigration
         $this->addSql('DROP TABLE item_alquiler');
         $this->addSql('DROP TABLE pagos');
         $this->addSql('DROP TABLE periodo_ausencia');
-        $this->addSql('DROP TABLE persona');
         $this->addSql('DROP TABLE profesor');
+        $this->addSql('DROP TABLE proveedor');
         $this->addSql('DROP TABLE replicas');
         $this->addSql('DROP TABLE reserva');
         $this->addSql('DROP TABLE suspension_clase');
