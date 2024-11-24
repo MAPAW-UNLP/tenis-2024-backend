@@ -53,6 +53,9 @@ class CobroController extends AbstractController
             elseif ($cobro -> getConcepto() === '2'){
                 $concepto_desc = 'Alquiler';
             }
+            elseif ($cobro -> getConcepto() === '3'){
+                $concepto_desc = 'Items';
+            }
             else{
                 $concepto_desc = 'Varios';
             }
