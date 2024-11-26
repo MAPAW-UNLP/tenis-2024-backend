@@ -16,7 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class ProveedorController extends AbstractController {
     /**
-     * @Route("/proveedor", name="app_get_proveedores", methods={"GET"})
+     * @Route("/proveedores", name="app_get_proveedores", methods={"GET"})
      */
     public function getProveedores(): Response
     {
