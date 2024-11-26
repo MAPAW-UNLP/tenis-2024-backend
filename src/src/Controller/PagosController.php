@@ -161,6 +161,7 @@ class PagosController extends AbstractController
     public function addPagoProfesor(
         Request $request, 
         ManagerRegistry $doctrine,
+        PagosRepository $pagosRepository,
         ProfesorRepository $profesorRepository
          ): Response
     {
@@ -174,7 +175,7 @@ class PagosController extends AbstractController
         
         foreach($pagos as $pago){
             $data = explode(':', $pago );//data[0] motivo, data[1] = monto 
-            $doctrine->getManager()->getRepository(Pagos::class)->registrarPagoProfesor($profesor,$motivo, $data[1], $descripcion, $fecha, $doctrine);
+            $pagosRepository->registrarPagoProfesor($profesor,$motivo, $data[1], $descripcion, $fecha, $doctrine);
         }
     
         $resp = array(
