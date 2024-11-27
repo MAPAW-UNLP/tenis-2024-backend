@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Proveedor;
 use App\Repository\ProveedorRepository;
+use App\Repository\PagosRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -103,11 +104,15 @@ class ProveedorController extends AbstractController {
     /**
      * @Route("/proveedores/{id}", name="app_baja_proveedor", methods={"DELETE"})
      */
-    public function deleteProveedor($id, ProveedorRepository $proveedorRepository): Response
+    public function deleteProveedor($id, ProveedorRepository $proveedorRepository, PagosRepository $pagosRepository): Response
     {
         $proveedor = $proveedorRepository->findOneById($id);
 
         if ($proveedor) {
+            $pagos = $pagosRepository->findPagosByProveedorId($id);
+            foreach ($pagos as $pago) {
+                $pagosRepository->remove($pago, true);
+            }
             $proveedorRepository->remove($proveedor, true);
             return $this->json([
                 'message' => 'Se ha eliminado el proveedor.',
