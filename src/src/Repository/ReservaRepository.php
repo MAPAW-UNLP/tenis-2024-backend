@@ -281,6 +281,36 @@ class ReservaRepository extends ServiceEntityRepository
 
     }
 
+    public function findReservasPorPersonaIdYFechaPorMes($personaId, $fechaDesde, $fechaHasta): array 
+    {
+        //  // Obtener los periodos de ausencia del profesor
+        // $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
+        //     ->isProfesorAusente($personaId,$fechaDesde);
+        
+        // if ($ausente) {
+        //     return array();
+        // }
+
+        //dd($personaId, $fecha);
+
+        // Crear la consulta base para las reservas
+        $queryBuilder = $this->createQueryBuilder('r')
+            ->andWhere('r.fecha >= :fechaDesde')
+            ->andWhere('r.fecha <= :fechaHasta')
+            ->orderBy("r.persona_id")
+            ->setParameter('fechaDesde', $fechaDesde)
+            ->setParameter('fechaHasta', $fechaHasta);
+           // ->andWhere('r.estado_id = :estadoId')
+            //->setParameter('estadoId',0);
+            
+        if ($personaId !== '-1') {
+            $queryBuilder->andWhere('r.persona_id = :personaId')
+                ->setParameter('personaId', $personaId);
+        }
+        return $queryBuilder->getQuery()->getResult();
+
+    }
+
     public function findReservasPorPersonaIdFechaYHora($personaId, $fecha, $horaIni, $horaFin): array 
     {
         //  // Obtener los periodos de ausencia del profesor

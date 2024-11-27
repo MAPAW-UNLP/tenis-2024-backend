@@ -249,6 +249,40 @@ public function getClasesPorProfesor(Request $request, ReservaRepository $reserv
     ], 200);
 }
 
+ /**
+ * @Route("/historial-profesor-mes", name="app_clases_profesor", methods={"GET"})
+ */
+public function getClasesPorProfesorMes(Request $request, ReservaRepository $reservaRepository, CustomService $cs): Response
+{
+    $profesorId = $request->query->get('profesor_id'); // ID del profesor
+    $fechaDesde = $request->query->get('fechaDesde');
+    $fechaHasta = $request->query->get('fechaHasta'); // Fecha en formato 'Y-m-d'
+    //return $this->json([
+    //     'persona_id' => $profesorId,
+    //     'fecha' => $fecha,
+    // ]);
 
+    // Validar que la fecha sea válida
+    if (!$fechaDesde || !\DateTime::createFromFormat('Y-m-d', $fechaDesde)) {
+        return $this->json([
+            'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+        ], 400);
+    }
+    // Validar que la fecha sea válida
+    if (!$fechaHasta || !\DateTime::createFromFormat('Y-m-d', $fechaHasta)) {
+        return $this->json([
+            'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+        ], 400);
+    }
+
+    // Obtener las reservas para el profesor en la fecha dada
+    $reservas = $reservaRepository->findReservasPorPersonaIdYFechaPorMes($profesorId, $fechaDesde, $fechaHasta);
+    $reservasFormateadas = $cs->reservaFromObjectToDataChart($reservas);
+
+    return $this->json([
+        'message' => 'Clases encontradas.',
+        'data' => $reservasFormateadas,
+    ], 200);
+}
 
 }
