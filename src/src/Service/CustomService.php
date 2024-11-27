@@ -90,6 +90,53 @@ class CustomService
 
         return $reservaObj;
     }
+
+    public function reservaFromObjectToDataChart(array $reservas)
+    {
+
+        $individual = 0;
+        $grupal = 0;
+
+        $resultadoFinal = [];
+        $actual = '';
+        $size = 0;
+        // Iterar sobre cada reserva
+        foreach ($reservas as $reserva) {
+            $profesor = $this->em->getRepository(Profesor::class)->findOneById($reserva->getPersonaId());
+            if($actual == ''){
+                $actual = $profesor->getNombre();
+            } 
+            if($actual != $profesor->getNombre()){
+                $resultadoFinal[$actual] = [$individual, $grupal];
+                $actual = $profesor->getNombre();
+                $individual = 0;
+                $grupal = 0;
+            }
+            if($reserva->getIdTipoClase() == '1'){
+                $individual++;
+            } else {
+                $grupal++;
+            }
+            $size ++;
+            if($size == count($reservas)){
+                $resultadoFinal[$actual] = [$individual, $grupal];
+            }
+        }
+
+        // Crear un array de objetos con los resultados
+        $resultado = [];
+        foreach ($resultadoFinal as $r => $value) {
+            $resultado[] = (object)[
+                'nombre' => $r,
+                'individual' => $value[0],
+                'grupal' => $value[1],
+                'total' => $value[0] + $value[1]
+            ];
+        }
+
+        return $resultado;
+
+    }
     /*no lo toco porque otro grupo tiene como tarea hacer el ABM de tipos de clase*/
     public function getInfoTipoClase($idTipoClase)
     {
