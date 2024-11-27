@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20241017162716 extends AbstractMigration
+final class Version20241127023936 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,7 +20,9 @@ final class Version20241017162716 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql('CREATE TABLE item_alquiler (id INT AUTO_INCREMENT NOT NULL, description VARCHAR(50) NOT NULL, importe INT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE proveedor (id INT AUTO_INCREMENT NOT NULL, nombre VARCHAR(30) NOT NULL, telefono VARCHAR(15) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('ALTER TABLE clases CHANGE cancha_id cancha_id INT NOT NULL, CHANGE fecha fecha DATE NOT NULL, CHANGE hora_ini hora_ini TIME NOT NULL, CHANGE hora_fin hora_fin TIME NOT NULL');
         $this->addSql('ALTER TABLE pagos ADD proveedor_id INT DEFAULT NULL');
         $this->addSql('ALTER TABLE pagos ADD CONSTRAINT FK_DA9B0DFFCB305D73 FOREIGN KEY (proveedor_id) REFERENCES proveedor (id)');
         $this->addSql('CREATE INDEX IDX_DA9B0DFFCB305D73 ON pagos (proveedor_id)');
@@ -30,7 +32,9 @@ final class Version20241017162716 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE pagos DROP FOREIGN KEY FK_DA9B0DFFCB305D73');
+        $this->addSql('DROP TABLE item_alquiler');
         $this->addSql('DROP TABLE proveedor');
+        $this->addSql('ALTER TABLE clases CHANGE cancha_id cancha_id INT DEFAULT NULL, CHANGE fecha fecha DATE DEFAULT NULL, CHANGE hora_ini hora_ini TIME DEFAULT NULL, CHANGE hora_fin hora_fin TIME DEFAULT NULL');
         $this->addSql('DROP INDEX IDX_DA9B0DFFCB305D73 ON pagos');
         $this->addSql('ALTER TABLE pagos DROP proveedor_id');
     }
