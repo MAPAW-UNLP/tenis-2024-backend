@@ -327,7 +327,7 @@ class CobroController extends AbstractController
             $page = 1; 
         }
 
-        $limit = 5; // Elementos por página.
+        $limit = 20; // Elementos por página.
 
         if (!is_numeric($clienteId) || !$clienteId) {
             $resp = array(
@@ -358,13 +358,11 @@ class CobroController extends AbstractController
                 "detail"=> 
                     [
                         "pagos" => $cobrosFormateados,
-                        /* Descomentar para paginar.
                         "page" => $cobros['page'],
                         'total' => $cobros['total'],
                         'totalPages' => $cobros['totalPages'],
                         'nextPage' => $cobros['nextPage'],
                         'previousPage' => $cobros['previousPage'],
-                        */
                     ]
             );
         }
