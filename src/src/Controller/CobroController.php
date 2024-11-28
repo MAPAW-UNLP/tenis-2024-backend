@@ -352,16 +352,19 @@ class CobroController extends AbstractController
                 $cobrosFormateados[] = $cobroFormateado;
             }
 
+
             $resp = array(
                 "rta"=> "ok",
                 "detail"=> 
                     [
                         "pagos" => $cobrosFormateados,
+                        /* Descomentar para paginar.
                         "page" => $cobros['page'],
                         'total' => $cobros['total'],
                         'totalPages' => $cobros['totalPages'],
                         'nextPage' => $cobros['nextPage'],
                         'previousPage' => $cobros['previousPage'],
+                        */
                     ]
             );
         }

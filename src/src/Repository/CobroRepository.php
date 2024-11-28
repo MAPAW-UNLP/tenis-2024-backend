@@ -90,6 +90,9 @@ class CobroRepository extends ServiceEntityRepository
 
         $qb->orderBy('c.fecha', 'DESC');
 
+        /*
+        // Opcion para paginar
+        
         // Configurar el paginador
         $qb->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit);
@@ -109,6 +112,8 @@ class CobroRepository extends ServiceEntityRepository
             'nextPage' => $page < $totalPages ? $page + 1 : null, 
             'previousPage' => $page > 1 ? $page - 1 : null 
         ];
+        */
+        return $qb->getQuery()->getResult();
     }
 
 
