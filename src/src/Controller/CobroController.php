@@ -327,7 +327,7 @@ class CobroController extends AbstractController
             $page = 1; 
         }
 
-        $limit = 10; // Elementos por página.
+        $limit = 5; // Elementos por página.
 
         if (!is_numeric($clienteId) || !$clienteId) {
             $resp = array(
