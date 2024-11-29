@@ -327,7 +327,12 @@ class CobroController extends AbstractController
             $page = 1; 
         }
 
-        $limit = 20; // Elementos por página.
+        /* 
+            PAGINACION
+            Está puesto en 1000 porque la paginacion no esta implementada en el frontend
+            Enviar los parametros, entre ellos la "page" para usar la paginacion.
+         */
+        $limit = 1000; // Elementos por página.
 
         if (!is_numeric($clienteId) || !$clienteId) {
             $resp = array(
