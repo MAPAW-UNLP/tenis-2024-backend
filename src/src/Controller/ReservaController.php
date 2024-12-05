@@ -142,7 +142,7 @@ class ReservaController extends AbstractController
             // "hora_fin"      =>  $parametros['hora_fin'], // Mantén como string
             "persona_id"    =>  $persona_id,
             "replica"       => (isset($parametros['replica']) && $parametros['replica'] == 'true') ? true : false,
-            "estado_id"     =>  0,
+            "estado_id"     =>  1,
             "grupo"         => isset($parametros['grupo_ids']) ? $parametros['grupo_ids'] : null,
             "tipo"          =>  $parametros['tipo'],
         );
@@ -266,7 +266,7 @@ class ReservaController extends AbstractController
                 $canchaId,
                 count($clientes) > 1 ? 2 : 1, // tipo_clase_id (Siempre en grupo)
                 0, // replica
-                0 // estado
+                1 // estado
             );
 
             if ($cs->without_reservations($canchaId, $fechaInicio, $horaIni, $horaFin)) {
@@ -335,7 +335,7 @@ class ReservaController extends AbstractController
             $canchaId,
             count($clientes) > 1 ? 2 : 1, // tipo_clase_id (1 = individual, 2 = grupal)
             0, // replica
-            0 // estado
+            1 // estado
         );
 
         if ($cs->without_reservations($canchaId, $fechaInicio, $horaIni, $horaFin)) {
@@ -484,7 +484,7 @@ public function suspenderReserva(int $reserva_id, ManagerRegistry $doctrine): Re
     }
 
     if ($reserva->getEstadoId() != 1) {
-        $reserva->setEstadoId(1);
+        $reserva->setEstadoId(2);
         $em->flush();
         $resp = [
             'rta' => 'ok',
