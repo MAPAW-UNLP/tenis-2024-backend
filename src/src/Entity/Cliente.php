@@ -47,11 +47,6 @@ class Cliente
     private $cobros;
 
     /**
-     * @ORM\OneToMany(targetEntity="Clases", mappedBy="cliente")
-     */
-    private $clases;
-
-    /**
      * @ORM\Column(type="boolean")
      */
     private $esAlumno;//esAlumno
@@ -61,10 +56,15 @@ class Cliente
      */
     private $visible;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Grupo", mappedBy="cliente")
+     */
+    private $grupos;
+
     public function __construct()
     {
         $this->cobros = new ArrayCollection();
-        $this->clases = new ArrayCollection();
+        $this->grupos = new ArrayCollection();
     }
 
 
@@ -155,30 +155,6 @@ class Cliente
         return $this;
     }
 
-    public function getClases(): ?Collection
-    {
-        return $this->clases;
-    }
-
-    public function addClase(Clases $clase): self
-    {
-        if (!$this->clases->contains($clase)) {
-            $this->clases[] = $clase;
-            $clase->setCliente($this);
-        }
-        return $this;
-    }
-
-    public function removeClase(Clases $clase): self
-    {
-        if ($this->clases->removeElement($clase)) {
-            if ($clase->getCliente() === $this) {
-                $clase->setCliente(null);
-            }
-        }
-        return $this;
-    }
-
     public function isEsAlumno(): ?bool
     {
         return $this->esAlumno;
@@ -203,5 +179,25 @@ class Cliente
         return $this;
     }
 
-      
+    public function getGrupos() 
+    { 
+        return $this->grupos; 
+    }
+
+    public function addGrupo(Grupo $grupo): self
+    {
+        if (!$this->grupos->contains($grupo)) {
+            $this->grupos[] = $grupo;
+        }
+        return $this;
+    }
+
+    public function removeGrupo(Grupo $grupo): self
+    {
+        if ($this->grupos->removeElement($grupo)) {
+            if ($grupo->getCliente() === $this) {
+            }
+        }
+        return $this;
+    }      
 }
