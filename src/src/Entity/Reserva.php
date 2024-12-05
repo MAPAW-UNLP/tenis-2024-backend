@@ -42,7 +42,7 @@ class Reserva
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $persona_id;
+    private $profesor_id;
 
     /**
      * @ORM\Column(type="boolean")
@@ -64,12 +64,12 @@ class Reserva
      */
     private $pago_id;
 
-    public function __construct($fecha, $hora_ini, $hora_fin, $persona_id, $cancha_id, $idTipoClase, $replica, $estado_id)
+    public function __construct($fecha, $hora_ini, $hora_fin, $profesor_id, $cancha_id, $idTipoClase, $replica, $estado_id)
     {
         $this->setFecha($fecha);
         $this->setHoraIni($hora_ini);
         $this->setHoraFin($hora_fin);
-        $this->setPersonaId($persona_id);
+        $this->setProfesorId($profesor_id);
         $this->setCanchaId($cancha_id);
         $this->setIdTipoClase($idTipoClase);
         $this->setReplica($replica);
@@ -130,14 +130,14 @@ class Reserva
         return $this;
     }
 
-    public function getPersonaId(): ?int
+    public function getProfesorId(): ?int
     {
-        return $this->persona_id;
+        return $this->profesor_id;
     }
 
-    public function setPersonaId(?int $persona_id): self
+    public function setProfesorId(?int $profesor_id): self
     {
-        $this->persona_id = $persona_id;
+        $this->profesor_id = $profesor_id;
 
         return $this;
     }
