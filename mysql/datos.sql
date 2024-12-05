@@ -67,7 +67,7 @@ VALUES (100.0, "2024-11-18", "18:00:00", "clase a", @clienteId, "Una descripcion
 
 -- crear clases(reserva)
 INSERT INTO reserva(cancha_id, fecha, hora_ini, hora_fin, profesor_id, replica, estado_id, id_tipo_clase, pago_id)
-VALUES (@canchaId, "2024-11-30", "15:00:00", "16:00:00", @profeId, 0, 0, 1, null);
+VALUES (@canchaId, "2024-12-16", "15:00:00", "16:00:00", @profeId, 0, 1, 1, null);
 
 SET @reservaId = (SELECT id FROM reserva LIMIT 1);
  
