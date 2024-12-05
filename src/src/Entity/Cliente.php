@@ -145,7 +145,7 @@ class Cliente
         return $this->clases;
     }
 
-    public function addClase(Clase $clase): self
+    public function addClase(Clases $clase): self
     {
         if (!$this->clases->contains($clase)) {
             $this->clases[] = $clase;
@@ -154,7 +154,7 @@ class Cliente
         return $this;
     }
 
-    public function removeClase(Clase $clase): self
+    public function removeClase(Clases $clase): self
     {
         if ($this->clases->removeElement($clase)) {
             if ($clase->getCliente() === $this) {
