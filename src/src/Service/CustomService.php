@@ -397,45 +397,23 @@ class CustomService
         return $total;
     }
 
-    public function getNextClasesOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente){
-        $clases = $this->em->getRepository( Clases::class )->findClasesBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
+    public function getNextClasesOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente) 
+    {
+        $clases = $this->em->getRepository(Clases::class)->findClasesBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
         $clasesPorDia = [
-            'domingo' => [],
-            'lunes' => [],
-            'martes' => [],
-            'miércoles' => [],
-            'jueves' => [],
-            'viernes' => [],
-            'sábado' => []
+            0 => [], // domingo
+            1 => [], // lunes
+            2 => [], // martes
+            3 => [], // miércoles
+            4 => [], // jueves
+            5 => [], // viernes
+            6 => [], // sábado
         ];
-    
+
         foreach ($clases as $clase) {
             $dia = $clase->getFecha()->format('w'); // 'w' devuelve el día de la semana (0=domingo, 6=sábado)
             $diaSemana = '';
-            switch ($dia) {
-                case 0:
-                    $diaSemana = 'domingo';
-                    break;
-                case 1:
-                    $diaSemana = 'lunes';
-                    break;
-                case 2:
-                    $diaSemana = 'martes';
-                    break;
-                case 3:
-                    $diaSemana = 'miércoles';
-                    break;
-                case 4:
-                    $diaSemana = 'jueves';
-                    break;
-                case 5:
-                    $diaSemana = 'viernes';
-                    break;
-                case 6:
-                    $diaSemana = 'sábado';
-                    break;
-            }
-    
+
             $claseFormateada = [
                 'id' => $clase->getId(),
                 'tipo' => $clase->getTipo(),
@@ -446,11 +424,32 @@ class CustomService
                 'profesor' => $clase->getProfesor()->getNombre(),
                 'cancha' => $this->em->getRepository(Cancha::class)->findOneById($clase->getCanchaId())->getNombre()
             ];
-    
-            $clasesPorDia[$diaSemana][] = $claseFormateada;
+
+            $clasesPorDia[$dia][] = $claseFormateada;
         }
-    
-        return $clasesPorDia;
-    }
+
+        // Obtener el día de inicio como número (0=domingo, 6=sábado)
+        $startDayNumber = $startDate->format('w'); 
+
+        // Reordenar el array a partir del día de inicio
+        $diasSemana = [
+            0 => 'domingo',
+            1 => 'lunes',
+            2 => 'martes',
+            3 => 'miércoles',
+            4 => 'jueves',
+            5 => 'viernes',
+            6 => 'sábado',
+        ];
+
+        $clasesPorDiaOrdenadas = [];
+        for ($i = 0; $i < 7; $i++) {
+            $diaIndex = ($startDayNumber + $i) % 7;
+            $diaSemana = $diasSemana[$diaIndex];
+            $clasesPorDiaOrdenadas[$diaSemana] = $clasesPorDia[$diaIndex];
+        }
+
+        return $clasesPorDiaOrdenadas;
+    }  
 
 }

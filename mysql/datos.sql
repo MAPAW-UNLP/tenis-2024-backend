@@ -44,6 +44,7 @@ VALUES('INDIVIDUAL', 100, @clienteId, @profeId, @canchaId, '2024-11-07', '08:00:
       ('GRUPAL', 50, @clienteId, @profeId, @canchaId, '2024-11-24', '18:00:00', '19:00:00');
 
 
+
 -- Datos de prueba para entidades faltantes
 INSERT INTO constancia_mantenimiento (fecha) VALUES ('2024-11-01');
 INSERT INTO cuenta (cliente_id, importe, fecha) VALUES (@clienteId, 1000, '2024-11-01');
@@ -52,8 +53,26 @@ INSERT INTO grupo (reserva_id, cliente_id) VALUES (1, @clienteId);
 INSERT INTO horario_disponible (fecha, hora_ini, hora_fin, profesor_id) VALUES ('2024-11-01', '08:00:00', '10:00:00', @profeId);
 INSERT INTO item_alquiler (description, importe) VALUES ('Raqueta', 50);
 INSERT INTO periodo_ausencia (fecha_ini, fecha_fin, motivo, profesor_id, estado_id) VALUES ('2024-11-01', '2024-11-15', 'Vacaciones', @profeId, 1);
---INSERT INTO persona (nombre, telefono, fechanac, escliente, visible) VALUES ('John Doe', '123456789', '1990-01-01', true, true);
 INSERT INTO proveedor (nombre, telefono) VALUES ('Proveedor 1', '123456789');
 INSERT INTO replicas (id_reserva, ultimo_mes) VALUES (1, 11);
 INSERT INTO reserva (cancha_id, fecha, hora_ini, hora_fin, profesor_id, replica, estado_id) VALUES (@canchaId, '2024-11-01', '08:00:00', '09:00:00', @profeId, 0, 1);
 INSERT INTO suspension_clase (fecha, hora, profesor_id, estado_id, reserva_id, motivo) VALUES ('2024-11-01', '08:00:00', @profeId, 1, 1, 'Motivo de prueba');
+
+-- crear cobros
+INSERT INTO cobro (monto, fecha, hora, concepto, cliente_id, descripcion)
+VALUES (100.0, "2024-11-18", "18:00:00", "clase a", @clienteId, "Una descripcion"),
+       (1000.0, "2024-11-19", "10:00:00", "clase b", @clienteId, "Una descripcion"),
+       (2000.0, "2024-11-20", "18:00:00", "clase c", @clienteId, "Una descripcion"),
+       (3000.0, "2024-11-21", "10:00:00", "clase d", @clienteId, "Una descripcion"),
+       (500.0, "2024-11-22", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (600.0, "2024-11-23", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (700.0, "2024-11-24", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (800.0, "2024-11-25", "10:00:00", "pago x", @clienteId, "Una descripcion"),
+       (900.0, "2024-11-18", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (1000.0, "2024-11-17", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (1000.0, "2024-11-16", "10:00:00", "pago x", @clienteId, "Una descripcion"),
+       (1000.0, "2024-11-26", "18:00:00", "pago x", @clienteId, "Una descripcion"),
+       (400.0, "2024-11-27", "19:00:00", "clase x", @clienteId, "Una descripcion"),
+       (100.0, "2024-10-27", "18:00:00", "clase x", @clienteId, "Una descripcion"),
+       (100.0, "2024-11-28", "18:00:00", "clase x", @clienteId, "Una descripcion"),
+      (400.0, "2024-11-01", "19:00:00", "clase y", @clienteId, "Otra descripcion");
