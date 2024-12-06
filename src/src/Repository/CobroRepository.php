@@ -67,6 +67,19 @@ class CobroRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($cobro);
         $this->getEntityManager()->flush();
     }
+
+
+    public function getEstadisticasCobros($fechaDesde, $fechaHasta): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.fecha >= :fechaDesde')
+            ->andWhere('c.fecha <= :fechaHasta')
+            ->setParameter('fechaDesde', $fechaDesde)
+            ->setParameter('fechaHasta', $fechaHasta)
+            ->orderBy('c.concepto', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 //    /**
 //     * @return Cobro[] Returns an array of Cobro objects
 //     */

@@ -72,6 +72,40 @@ class CobroController extends AbstractController
         return $this->json($objCobros);
     }
 
+    /**
+     * @Route("/stats-cobros", name="get_cobros_historial", methods={"GET"})
+     */
+    public function getEstadisticasCobros(Request $request,
+    ManagerRegistry $doctrine,
+    ServiceCustomService $cs): Response
+    {
+        $fechaDesde = $request->query->get('fechaDesde');
+        $fechaHasta = $request->query->get('fechaHasta'); // Fecha en formato 'Y-m-d'
+
+        // Validar que la fecha sea válida
+        if (!$fechaDesde || !\DateTime::createFromFormat('Y-m-d', $fechaDesde)) {
+            return $this->json([
+                'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+            ], 400);
+        }
+        // Validar que la fecha sea válida
+        if (!$fechaHasta || !\DateTime::createFromFormat('Y-m-d', $fechaHasta)) {
+            return $this->json([
+                'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+            ], 400);
+        }
+
+        // Obtener las reservas para el profesor en la fecha dada
+        $em = $doctrine->getManager();
+        $cobros = $em->getRepository( Cobro::class )->getEstadisticasCobros($fechaDesde, $fechaHasta);
+        $cobrosFormat = $cs->cobrosToDataChart($cobros);
+
+        return $this->json([
+            'message' => 'Cobros totales.',
+            'data' => $cobrosFormat,
+        ], 200);
+    }
+
 
     /**
      * @Route("/cobros_por_cliente", name="app_Cobros_clienteId", methods={"GET"})

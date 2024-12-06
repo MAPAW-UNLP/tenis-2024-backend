@@ -297,9 +297,11 @@ class ReservaRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('r')
             ->andWhere('r.fecha >= :fechaDesde')
             ->andWhere('r.fecha <= :fechaHasta')
+            ->andWhere('r.fecha < :fechaActual')
             ->orderBy("r.persona_id")
             ->setParameter('fechaDesde', $fechaDesde)
-            ->setParameter('fechaHasta', $fechaHasta);
+            ->setParameter('fechaHasta', $fechaHasta)
+            ->setParameter('fechaActual', new DateTime());
            // ->andWhere('r.estado_id = :estadoId')
             //->setParameter('estadoId',0);
             

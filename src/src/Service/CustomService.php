@@ -137,6 +137,67 @@ class CustomService
         return $resultado;
 
     }
+
+    public function cobrosToDataChart(array $cobros)
+    {
+
+        $pago = 0;
+        $alquiler = 0;
+        $varios = 0;
+
+        $resultadoFinal = [];
+        // Iterar sobre cada reserva
+        foreach ($cobros as $cobro) {
+            if($cobro->getConcepto() == "1"){
+                $pago++;
+            } else if($cobro->getConcepto() == "2"){
+                $alquiler++;
+            } else {
+                $varios++;
+            }
+        }
+
+        $resultado[] = (object)[
+            'Pagos' => $pago,
+            'Alquiler' => $alquiler,
+            'Varios' => $varios,
+            'total' => $pago + $alquiler + $varios
+        ];
+
+        return $resultado;
+
+    }
+
+    public function pagosToDataChart(array $pagos)
+    {
+
+        $clases = 0;
+        $proveedores = 0;
+        $varios = 0;
+
+        $resultadoFinal = [];
+        // Iterar sobre cada reserva
+        foreach ($pagos as $pago) {
+            if($pago->getMotivo() == "1"){
+                $clases++;
+            } else if($pago->getMotivo() == "2"){
+                $proveedores++;
+            } else {
+                $varios++;
+            }
+        }
+
+        $resultado[] = (object)[
+            'Clases' => $clases,
+            'Proveedores' => $proveedores,
+            'Varios' => $varios,
+            'total' => $proveedores + $clases + $varios
+        ];
+
+        return $resultado;
+
+    }
+
     /*no lo toco porque otro grupo tiene como tarea hacer el ABM de tipos de clase*/
     public function getInfoTipoClase($idTipoClase)
     {
