@@ -96,14 +96,15 @@ class BalanzaController extends AbstractController
 
         $statement = $em->getConnection()->prepare(
             "SELECT mov.fecha FROM (
-                (SELECT c.id, c.fecha, c.concepto, c.monto, c.descripcion, c.cliente_id as persona_id, a.nombre, 'Cobro' AS tipo
-                FROM cobro c INNER JOIN cliente a ON a.id = c.cliente_id) as cobrodata
+                SELECT c.id, c.fecha, c.concepto, c.monto, c.descripcion, c.cliente_id as persona_id, a.nombre, 'Cobro' AS tipo
+                FROM cobro c INNER JOIN cliente a ON a.id = c.cliente_id
                 UNION
-                (SELECT p.id, p.fecha, p.motivo as concepto, p.monto, p.descripcion, p.profesor_id as persona_id, prof.nombre, 'Pago' AS tipo
-                FROM pago p INNER JOIN profesor prof ON prof.id = p.profesor_id) as pagodata
+                SELECT p.id, p.fecha, p.motivo as concepto, p.monto, p.descripcion, p.profesor_id as persona_id, prof.nombre, 'Pago' AS tipo
+                FROM pagos p INNER JOIN profesor prof ON prof.id = p.profesor_id
             ) as mov 
             ORDER BY mov.fecha DESC"
         );
+        
         $result = $statement->execute();
         $results = $result-> fetchAll();
 
