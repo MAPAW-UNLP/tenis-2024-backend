@@ -400,7 +400,7 @@ class CustomService
 
     public function getNextReservasOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente) 
     {
-        $reservas = $this->em->getRepository(Grupo::class)->findReservasBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
+        $reservas = $this->em->getRepository(Reserva::class)->findReservasBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
         $reservasPorDia = [
             0 => [], // domingo
             1 => [], // lunes
@@ -450,5 +450,24 @@ class CustomService
         }
 
         return $reservasPorDiaOrdenadas;
+    }
+
+    public function findCanceledReservasByClienteId($cliente){
+        $reservas = $this->em->getRepository(Reserva::class)->findReservasByClientIdAndEstadoCanceled($cliente);
+        $reservasFormateadas = [];
+        foreach ($reservas as $reserva) {
+            $reservaFormateada = [
+                'id' => $reserva->getId(),
+                'cancha' => $this->em->getRepository(Cancha::class)->findOneById($reserva->getCanchaId())->getNombre(),
+                'fecha' => $reserva->getFecha()->format('Y-m-d'),
+                'hora_ini' => $reserva->getHoraIni()->format('H:i:s'),
+                'hora_fin' => $reserva->getHoraFin()->format('H:i:s'),
+                'estado' => $this->em->getRepository(Estado::class)->findOneById($reserva->getEstadoId())->getDescripcion(),
+                'tipo' => $this->em->getRepository(Clases::class)->findOneById($reserva->getIdTipoClase())->getTipo(),
+                'profesor' => $this->em->getRepository(Profesor::class)->findOneById($reserva->getProfesorId())->getNombre()
+            ];
+            $reservasFormateadas[] = $reservaFormateada;
+        }
+        return $reservasFormateadas;
     }
 }

@@ -218,5 +218,27 @@ class ClienteController extends AbstractController
         }
         return $this->json($resp);
     }
+
     
+    /**
+     * @Route("/cliente/clasesAFavor", name="cliente_credits", methods={"GET"})
+     */
+    public function getCanceledClases(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
+    {
+        $clienteId = $request->query->get('clienteID');
+        $em = $doctrine->getManager();
+        $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
+
+        if (!$cliente) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "No se encontró al cliente";
+        }
+        else {
+            $reservas = $cs->findCanceledReservasByClienteId($cliente);
+            $resp['rta'] =  "ok";
+            $resp['detail'] = $reservas;
+        }       
+
+        return $this->json($resp);
+    }    
 }

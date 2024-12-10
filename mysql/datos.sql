@@ -30,7 +30,7 @@ INSERT INTO clases (tipo, importe) VALUES ('GRUPAL', 10000);
 
 -- estados 
 INSERT INTO estado(descripcion)
-VALUES("ASIGNADO"),("CANCELADO")("CONSUMIDO");--(1/2/3)
+VALUES("ASIGNADO"),("CANCELADO"),("CONSUMIDO");--(1/2/3)
 
 
 -- Datos de prueba para entidades faltantes
