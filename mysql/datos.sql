@@ -67,10 +67,18 @@ VALUES (100.0, "2024-11-18", "18:00:00", "clase a", @clienteId, "Una descripcion
 
 -- crear clases(reserva)
 INSERT INTO reserva(cancha_id, fecha, hora_ini, hora_fin, profesor_id, replica, estado_id, id_tipo_clase, pago_id)
-VALUES (@canchaId, "2024-12-16", "15:00:00", "16:00:00", @profeId, 0, 1, 1, null);
+VALUES (@canchaId, "2024-12-16", "15:00:00", "16:00:00", @profeId, 0, 1, 1, null),
+       (@canchaId, "2024-12-17", "15:00:00", "16:00:00", @profeId, 0, 2, 1, null),
+       (@canchaId, "2024-12-18", "15:00:00", "16:00:00", @profeId, 0, 2, 1, null),
+       (@canchaId, "2024-12-19", "15:00:00", "16:00:00", @profeId, 0, 2, 1, null);
 
-SET @reservaId = (SELECT id FROM reserva LIMIT 1);
+
+SET @reservaUnoId = (SELECT id FROM reserva WHERE fecha = '2024-12-17');
+SET @reservaDosId = (SELECT id FROM reserva WHERE fecha = '2024-12-18');
+SET @reservaTresId = (SELECT id FROM reserva WHERE fecha = '2024-12-19');
  
 -- asignar reserva(clase) a cliente (cambiar a cliente_id)
 INSERT INTO grupo(reserva_id, cliente_id)
-VALUES(@reservaId, @clienteId);
+VALUES(@reservaUnoId, @clienteId),
+      (@reservaDosId, @clienteId),
+      (@reservaTresId, @clienteId);

@@ -223,7 +223,7 @@ class ClienteController extends AbstractController
     /**
      * @Route("/cliente/clasesAFavor", name="cliente_credits", methods={"GET"})
      */
-    public function getCanceledClases(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
+    public function getClasesAFavor(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
     {
         $clienteId = $request->query->get('clienteID');
         $em = $doctrine->getManager();
