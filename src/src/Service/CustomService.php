@@ -454,6 +454,7 @@ class CustomService
 
     public function findCanceledReservasByClienteId($cliente){
         $reservas = $this->em->getRepository(Reserva::class)->findReservasByClientIdAndEstadoCanceled($cliente);
+        /*
         $reservasFormateadas = [];
         foreach ($reservas as $reserva) {
             $reservaFormateada = [
@@ -469,5 +470,7 @@ class CustomService
             $reservasFormateadas[] = $reservaFormateada;
         }
         return $reservasFormateadas;
+        */
+        return count($reservas);
     }
 }

@@ -36,7 +36,6 @@ VALUES("ASIGNADO"),("CANCELADO"),("CONSUMIDO");--(1/2/3)
 -- Datos de prueba para entidades faltantes
 INSERT INTO constancia_mantenimiento (fecha) VALUES ('2024-11-01');
 INSERT INTO cuenta (cliente_id, importe, fecha) VALUES (@clienteId, 1000, '2024-11-01');
-INSERT INTO grupo (reserva_id, cliente_id) VALUES (1, @clienteId);
 INSERT INTO horario_disponible (fecha, hora_ini, hora_fin, profesor_id) VALUES ('2024-11-01', '08:00:00', '10:00:00', @profeId);
 INSERT INTO item_alquiler (description, importe) VALUES ('Raqueta', 50);
 INSERT INTO periodo_ausencia (fecha_ini, fecha_fin, motivo, profesor_id, estado_id) VALUES ('2024-11-01', '2024-11-15', 'Vacaciones', @profeId, 1);
