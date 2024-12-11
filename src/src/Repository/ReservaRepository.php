@@ -436,7 +436,7 @@ class ReservaRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }  
-    
+
 
     //  Agregar condiciones para filtrar solapamientos
     //  if ($periodosAusencia) {

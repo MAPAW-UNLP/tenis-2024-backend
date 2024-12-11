@@ -27,7 +27,7 @@ class CustomService
 {
 
     private $doctrine;
-    private $estadosArr = ['ASIGNADO', 'CANCELADO', 'CONSUMIDO'];
+    private $estadosArr = ['ASIGNADO', 'CANCELADO', 'CONSUMIDO', 'PENDIENTE'];
     private $em;
     private $formatter;
 
@@ -472,5 +472,19 @@ class CustomService
         return $reservasFormateadas;
         */
         return count($reservas);
+    }
+
+    public function ModificarClaseAFavor($fecha, $hora_ini, $hora_fin, $clienteId){
+        $clases = $this->em->getRepository(Reserva::class)->findReservasByClientIdAndEstadoCanceled($clienteId);
+        $claseAFavor = $clases[0];
+        $claseAFavor->setFecha($fecha);
+        $claseAFavor->setHoraIni($hora_ini);
+        $claseAFavor->setHoraFin($hora_fin);
+        $claseAFavor->setEstadoId(4); // ESTADO PENDIENTE
+
+        //validarReserva
+
+        $this->em->persist($claseAFavor);
+        $this->em->flush();
     }
 }

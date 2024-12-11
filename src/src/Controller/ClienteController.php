@@ -240,5 +240,39 @@ class ClienteController extends AbstractController
         }       
 
         return $this->json($resp);
-    }    
+    }   
+    
+    
+    /**
+     * @Route("/cliente/reservarClaseAFavor", name="cliente_reservar_clase_a_favor", methods={"POST"})
+     */
+    public function reservarClaseAFavor(Request $request, ServiceCustomService $cs): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        try {
+            $fecha = $data['date'] ? new \DateTime($data['date']) : null;
+            $hora_ini = $data['startTime'] ? new \DateTime($data['startTime']) : null;
+            $hora_fin = $data['endTime'] ? new \DateTime($data['endTime']) : null;
+            $clienteId = $data['clienteId'] ? $data['clienteId'] : null;                 
+        } catch (\Exception $e) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "Parámetros inválido1s";
+            return $this->json($resp);
+        }
+
+        if (!$fecha || !$hora_ini || !$hora_fin || !$clienteId) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "Parámetros inválidos";
+        }
+        else{
+            // FALTA ID CLIENTE O CLASE.
+            $cs->ModificarClaseAFavor($fecha, $hora_ini, $hora_fin, $clienteId);            
+            $resp['rta'] =  "ok";
+            $resp['detail'] = "Se cambió la fecha y hora de la clase";
+        }
+
+        return $this->json($resp);
+    }
+
 }
