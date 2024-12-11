@@ -266,10 +266,15 @@ class ClienteController extends AbstractController
             $resp['detail'] = "Parámetros inválidos";
         }
         else{
-            // FALTA ID CLIENTE O CLASE.
-            $cs->ModificarClaseAFavor($fecha, $hora_ini, $hora_fin, $clienteId);            
-            $resp['rta'] =  "ok";
-            $resp['detail'] = "Se cambió la fecha y hora de la clase";
+            try{
+                $cs->ModificarClaseAFavor($fecha, $hora_ini, $hora_fin, $clienteId);            
+                $resp['rta'] =  "ok";
+                $resp['detail'] = "Se cambió la fecha y hora de la clase";
+            }
+            catch (\Exception $e){
+                $resp['rta'] =  "error";
+                $resp['detail'] = "No hay clases a favor";
+            }
         }
 
         return $this->json($resp);
