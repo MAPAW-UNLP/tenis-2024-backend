@@ -8,6 +8,7 @@ use App\Entity\Cobro;
 use App\Entity\Alumno;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
  * @extends ServiceEntityRepository<Cobro>
@@ -67,6 +68,51 @@ class CobroRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($cobro);
         $this->getEntityManager()->flush();
     }
+
+
+    public function findCobrosByClienteId($clienteId, \DateTime $fechaInicio, \DateTime $fechaFin, $concepto, $monto, $page = 1, $limit = 10)
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.cliente = :clienteId')
+            ->setParameter('clienteId', $clienteId)
+            ->andWhere('c.fecha BETWEEN :fechaInicio AND :fechaFin')
+            ->setParameter('fechaInicio', $fechaInicio->format('Y-m-d'))
+            ->setParameter('fechaFin', $fechaFin->format('Y-m-d'));
+
+        if ($concepto) {
+            $qb->andWhere('c.concepto LIKE :concepto')
+                ->setParameter('concepto', '%' . $concepto . '%');
+        }
+        if ($monto) {
+            $qb->andWhere('c.monto >= :monto')
+                ->setParameter('monto', $monto);
+        }
+
+        $qb->orderBy('c.fecha', 'DESC');
+
+        
+        // Configurar el paginador
+        $qb->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        $query = $qb->getQuery();
+        
+        $paginator = new Paginator($query, $fetchJoinCollection = true);
+        
+        $totalItems = $paginator->count(); 
+        $totalPages = ceil($totalItems / $limit); 
+        
+        return [ 
+            'data' => iterator_to_array($paginator), 
+            'total' => $totalItems, 
+            'page' => $page, 
+            'totalPages' => $totalPages, 
+            'nextPage' => $page < $totalPages ? $page + 1 : null, 
+            'previousPage' => $page > 1 ? $page - 1 : null 
+        ];
+    }
+
+
 //    /**
 //     * @return Cobro[] Returns an array of Cobro objects
 //     */

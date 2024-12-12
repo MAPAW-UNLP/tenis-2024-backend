@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\GrupoRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
  * @ORM\Entity(repositoryClass=GrupoRepository::class)
@@ -23,9 +24,11 @@ class Grupo
     private $reserva_id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\ManyToOne(targetEntity="Cliente", inversedBy="cobros")
+     * @ORM\JoinColumn(name="cliente_id", referencedColumnName="id")
+     * @Ignore
      */
-    private $persona_id;
+    private $cliente;
 
     public function getId(): ?int
     {
@@ -44,15 +47,26 @@ class Grupo
         return $this;
     }
 
-    public function getPersonaId(): ?int
+    public function getClienteId(): ?int
     {
-        return $this->persona_id;
+        return $this->cliente->getId();
     }
 
-    public function setPersonaId(int $persona_id): self
+    public function setClienteId(int $cliente_id): self
     {
-        $this->persona_id = $persona_id;
+        $this->cliente = $cliente_id;
 
         return $this;
+    }
+
+    public function setCliente(?Cliente $cliente): self
+    {
+        $this->cliente = $cliente;
+        return $this;
+    }
+
+    public function getCliente(): ?Cliente
+    {
+        return $this->cliente;
     }
 }

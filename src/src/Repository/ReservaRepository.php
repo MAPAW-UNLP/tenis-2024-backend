@@ -100,15 +100,15 @@ class ReservaRepository extends ServiceEntityRepository
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
-    public function findProfesorReservasBetweenDates($fecha1, $fecha2, $personaId): array
+    public function findProfesorReservasBetweenDates($fecha1, $fecha2, $profesorId): array
     {
         return $this->createQueryBuilder('u')
             ->andWhere('u.fecha >= :val1')
             ->setParameter('val1', $fecha1)
             ->andWhere('u.fecha <= :val2')
             ->setParameter('val2', $fecha2)
-            ->andWhere('u.persona_id = :persona_id') // Usa persona_id
-            ->setParameter('persona_id', $personaId)
+            ->andWhere('u.profesor_id = :profesor_id') // Usa profesor_id
+            ->setParameter('profesor_id', $profesorId)
             ->getQuery()
             ->getResult();
     }
@@ -164,11 +164,11 @@ class ReservaRepository extends ServiceEntityRepository
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
-    public function findReservasProfesor($persona_id): array
+    public function findReservasProfesor($profesor_id): array
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.persona_id = :val1')
-            ->setParameter('val1', $persona_id)
+            ->andWhere('u.profesor_id = :val1')
+            ->setParameter('val1', $profesor_id)
             ->getQuery()
             ->getResult();
     }
@@ -176,11 +176,11 @@ class ReservaRepository extends ServiceEntityRepository
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
-    public function findReservasProfesorByDateAndTime($persona_id, $fecha, $hora): array
+    public function findReservasProfesorByDateAndTime($profesor_id, $fecha, $hora): array
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.persona_id = :val1')
-            ->setParameter('val1', $persona_id)
+            ->andWhere('u.profesor_id = :val1')
+            ->setParameter('val1', $profesor_id)
             ->andWhere('u.fecha = :val2')
             ->setParameter('val2', $fecha)
             ->andWhere('u.hora_ini = :val3')
@@ -197,7 +197,7 @@ class ReservaRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('u')
             ->andWhere('u.fecha < :val1')
             ->setParameter('val1', $fecha)
-            ->andWhere('u.estado_id = 0')
+            ->andWhere('u.estado_id = 1')
             ->orderBy('u.fecha', 'DESC')
             ->setMaxResults(3)
             ->getQuery()
@@ -212,7 +212,7 @@ class ReservaRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('u')
             ->andWhere('u.fecha > :val1')
             ->setParameter('val1', $fecha)
-            ->andWhere('u.estado_id = 0')
+            ->andWhere('u.estado_id = 1')
             ->orderBy('u.fecha', 'ASC')
             ->setMaxResults(3)
             ->getQuery()
@@ -222,13 +222,13 @@ class ReservaRepository extends ServiceEntityRepository
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
-    public function findReservasProfesorSinPagoId($persona_id, $primerDia, $ultimoDia): array
+    public function findReservasProfesorSinPagoId($profesor_id, $primerDia, $ultimoDia): array
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.persona_id = :personaId')
+            ->andWhere('u.profesor_id = :profesorId')
             ->andWhere('u.fecha >= :primerDia')
             ->andWhere('u.fecha <= :ultimoDia')
-            ->setParameter('personaId', $persona_id)
+            ->setParameter('profesorId', $profesor_id)
             ->setParameter('primerDia', $primerDia)
             ->setParameter('ultimoDia', $ultimoDia)
             ->andWhere('u.pago_id is null')
@@ -242,13 +242,13 @@ class ReservaRepository extends ServiceEntityRepository
     /**
      * @return Reserva[] Returns an array of Reserva objects
      */
-    public function findReservasProfesorConPagoId($persona_id, $primerDia, $ultimoDia): array
+    public function findReservasProfesorConPagoId($profesor_id, $primerDia, $ultimoDia): array
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.persona_id = :personaId')
+            ->andWhere('u.profesor_id = :profesorId')
             ->andWhere('u.fecha >= :primerDia')
             ->andWhere('u.fecha <= :ultimoDia')
-            ->setParameter('personaId', $persona_id)
+            ->setParameter('profesorId', $profesor_id)
             ->setParameter('primerDia', $primerDia)
             ->setParameter('ultimoDia', $ultimoDia)
             ->andWhere('u.pago_id is not null')
@@ -256,22 +256,22 @@ class ReservaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findReservasPorPersonaIdYFecha($personaId, $fecha): array 
+    public function findReservasPorPersonaIdYFecha($profesorId, $fecha): array 
     {
         //  // Obtener los periodos de ausencia del profesor
         $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
-            ->isProfesorAusente($personaId,$fecha);
+            ->isProfesorAusente($profesorId,$fecha);
         
         if ($ausente) {
             return array();
         }
 
-        //dd($personaId, $fecha);
+        //dd($profesorId, $fecha);
 
         // Crear la consulta base para las reservas
         $queryBuilder = $this->createQueryBuilder('r')
-            ->andWhere('r.persona_id = :personaId')
-            ->setParameter('personaId', $personaId)
+            ->andWhere('r.profesor_id = :profesorId')
+            ->setParameter('profesorId', $profesorId)
             ->andWhere('r.fecha = :fecha')
             ->setParameter('fecha', $fecha);
            // ->andWhere('r.estado_id = :estadoId')
@@ -311,22 +311,22 @@ class ReservaRepository extends ServiceEntityRepository
 
     }
 
-    public function findReservasPorPersonaIdFechaYHora($personaId, $fecha, $horaIni, $horaFin): array 
+    public function findReservasPorPersonaIdFechaYHora($profesorId, $fecha, $horaIni, $horaFin): array 
     {
         //  // Obtener los periodos de ausencia del profesor
         $ausente = $this->getEntityManager()->getRepository(PeriodoAusencia::class)
-            ->isProfesorAusente($personaId,$fecha);
+            ->isProfesorAusente($profesorId,$fecha);
         
         if ($ausente) {
             return array();
         }
 
-        //dd($personaId, $fecha);
+        //dd($profesorId, $fecha);
 
         // Crear la consulta base para las reservas
         $queryBuilder = $this->createQueryBuilder('r')
-        ->andWhere('r.persona_id = :personaId')
-        ->setParameter('personaId', $personaId)
+        ->andWhere('r.profesor_id = :profesorId')
+        ->setParameter('profesorId', $profesorId)
         ->andWhere('r.fecha = :fecha')
         ->setParameter('fecha', $fecha)
        // ->andWhere('r.estado_id = :estadoId')
@@ -351,11 +351,11 @@ class ReservaRepository extends ServiceEntityRepository
         return $record ? $record->getId() : 0;
     }
 
-    public function hasOverlappingReservas($personaId, $fecha, $horaIni, $horaFin): bool
+    public function hasOverlappingReservas($profesorId, $fecha, $horaIni, $horaFin): bool
     {
         $reservas = $this->createQueryBuilder('r')
-            ->andWhere('r.persona_id = :personaId')
-            ->setParameter('personaId', $personaId)
+            ->andWhere('r.profesor_id = :profesorId')
+            ->setParameter('profesorId', $profesorId)
             ->andWhere('r.fecha = :fecha')
             ->setParameter('fecha', $fecha)
             ->andWhere('r.hora_ini < :horaFin')

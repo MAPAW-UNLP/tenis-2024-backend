@@ -20,11 +20,6 @@ class Cobro
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $idPersona;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
     private $idTipoClase;
 
     /**
@@ -64,14 +59,14 @@ class Cobro
         return $this->id;
     }
 
-    public function getIdPersona(): ?int
+    public function getIdCliente(): ?int
     {
-        return $this->idPersona;
+        return $this->idCliente;
     }
 
-    public function setIdPersona(int $idPersona): self
+    public function setIdCliente(int $idCliente): self
     {
-        $this->idPersona = $idPersona;
+        $this->idCliente = $idCliente;
 
         return $this;
     }

@@ -8,9 +8,9 @@ use App\Entity\Alquiler;
 use App\Entity\Cliente;
 use App\Entity\Cancha;
 use App\Entity\Clases;
+use App\Entity\Estado;
 use App\Entity\Grupo;
 use App\Entity\Pagos;
-use App\Entity\Persona;
 use App\Entity\Replicas;
 use App\Entity\Reserva;
 use App\Entity\Usuario;
@@ -49,9 +49,9 @@ class CustomService
         $clienteRepository = $this->em->getRepository(Cliente::class);
 
 
-        if ($reserva->getPersonaId() !== null && $reserva->getPersonaId() != 0) {
+        if ($reserva->getProfesorId() !== null && $reserva->getProfesorId() != 0) {
             // Obtener el persona_id desde el objeto Reserva
-            $profesorId = $reserva->getPersonaId();
+            $profesorId = $reserva->getProfesorId();
 
             // Usar el personaId para buscar la persona correspondiente
             $personaTitular = $this->em->getRepository(Profesor::class)->findOneById($profesorId);
@@ -60,7 +60,7 @@ class CustomService
 
             if (count($grupoPersonasId) > 0) {
                 foreach ($grupoPersonasId as $persona) {
-                    $miembro = $clienteRepository->findOneById($persona->getPersonaId())->toArrayAsociativo();
+                    $miembro = $clienteRepository->findOneById($persona->getClienteId())->toArrayAsociativo();
                     array_push($grupo, $miembro);
                 }
             }
@@ -78,7 +78,7 @@ class CustomService
             "fecha" => $this->formatter->getFormattedDate($reserva->getFecha()),
             "horaIni" => $this->formatter->getFormattedTime($reserva->getHoraIni()),
             "horaFin" => $this->formatter->getFormattedTime($reserva->getHoraFin()),
-            "profesorId" => $reserva->getPersonaId(),
+            "profesorId" => $reserva->getProfesorId(),
             "titular" => $personaTitular,
             "replica" => $reserva->isReplica(),
             "estado" => $this->estadosArr[$reserva->getEstadoId()],
@@ -233,7 +233,7 @@ class CustomService
         $canchaPreferidaId = $reserva->getCanchaId();
 
         if ($canchaRepository->isCanchaDisponibleEnTurno($canchaPreferidaId, $fecha, $reserva->getHoraIni(), $reserva->getHoraFin())) {
-            return $canchaPreferidaId->getCanchaId();
+            return $canchaPreferidaId;
         }
 
         $canchasDisponibles = $canchaRepository->canchasDisponiblesEnFechaYTuno($fecha, $reserva->getHoraIni(), $reserva->getHoraFin());
@@ -323,11 +323,14 @@ class CustomService
 
 
                     $pago = new Pagos();
-                    $pago->setIdPersona($personaId->getPersonaId());
+                    $pago->setIdCliente($personaId->getClienteId());
                     $pago->setFecha($reserva->getFecha());
                     $tipoClase = $reserva->getIdTipoClase() != null ? $reserva->getIdTipoClase() : 2;
                     $pago->setIdTipoClase($tipoClase);
                     $pago->setCantidad(-1);
+                    $pago->setMonto(0);//Se debe definir un monto
+                    $pago->setHora(new \DateTime()); //Se debe definir una hora
+                    $pago->setMotivo("Default"); //Se debe definir un motivo
                     $this->em->persist($pago);
                 }
             }
@@ -419,7 +422,7 @@ class CustomService
         foreach ($clientes as $cliente_id) {
             $grupo_cliente = new Grupo();
             $grupo_cliente->setReservaId($lastReservaId);
-            $grupo_cliente->setPersonaId($cliente_id);
+            $grupo_cliente->setClienteId($cliente_id);
             $this->em->persist($grupo_cliente);
             $this->em->flush();
         }
@@ -442,60 +445,57 @@ class CustomService
         return $total;
     }
 
-    public function getNextClasesOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente){
-        $clases = $this->em->getRepository( Clases::class )->findClasesBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
-        $clasesPorDia = [
-            'domingo' => [],
-            'lunes' => [],
-            'martes' => [],
-            'miércoles' => [],
-            'jueves' => [],
-            'viernes' => [],
-            'sábado' => []
+    public function getNextReservasOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente) 
+    {
+        $reservas = $this->em->getRepository(Grupo::class)->findReservasBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
+        $reservasPorDia = [
+            0 => [], // domingo
+            1 => [], // lunes
+            2 => [], // martes
+            3 => [], // miércoles
+            4 => [], // jueves
+            5 => [], // viernes
+            6 => [], // sábado
         ];
-    
-        foreach ($clases as $clase) {
-            $dia = $clase->getFecha()->format('w'); // 'w' devuelve el día de la semana (0=domingo, 6=sábado)
-            $diaSemana = '';
-            switch ($dia) {
-                case 0:
-                    $diaSemana = 'domingo';
-                    break;
-                case 1:
-                    $diaSemana = 'lunes';
-                    break;
-                case 2:
-                    $diaSemana = 'martes';
-                    break;
-                case 3:
-                    $diaSemana = 'miércoles';
-                    break;
-                case 4:
-                    $diaSemana = 'jueves';
-                    break;
-                case 5:
-                    $diaSemana = 'viernes';
-                    break;
-                case 6:
-                    $diaSemana = 'sábado';
-                    break;
-            }
-    
-            $claseFormateada = [
-                'id' => $clase->getId(),
-                'tipo' => $clase->getTipo(),
-                'importe' => $clase->getImporte(),
-                'fecha' => $clase->getFecha()->format('Y-m-d'),
-                'hora_ini' => $clase->getHoraIni()->format('H:i:s'),
-                'hora_fin' => $clase->getHoraFin()->format('H:i:s'),
-                'profesor' => $clase->getProfesor()->getNombre(),
-                'cancha' => $this->em->getRepository(Cancha::class)->findOneById($clase->getCanchaId())->getNombre()
-            ];
-    
-            $clasesPorDia[$diaSemana][] = $claseFormateada;
-        }
-    
-        return $clasesPorDia;
-    }
 
+        foreach ($reservas as $reserva) {
+            $dia = $reserva->getFecha()->format('w'); // 'w' devuelve el día de la semana (0=domingo, 6=sábado)
+
+            $reservaFormateada = [
+                'id' => $reserva->getId(),
+                'cancha' => $this->em->getRepository(Cancha::class)->findOneById($reserva->getCanchaId())->getNombre(),
+                'fecha' => $reserva->getFecha()->format('Y-m-d'),
+                'hora_ini' => $reserva->getHoraIni()->format('H:i:s'),
+                'hora_fin' => $reserva->getHoraFin()->format('H:i:s'),
+                'estado' => $this->em->getRepository(Estado::class)->findOneById($reserva->getEstadoId())->getDescripcion(),
+                'tipo' => $this->em->getRepository(Clases::class)->findOneById($reserva->getIdTipoClase())->getTipo(),
+                'profesor' => $this->em->getRepository(Profesor::class)->findOneById($reserva->getProfesorId())->getNombre()
+            ];
+
+            $reservasPorDia[$dia][] = $reservaFormateada;
+        }
+
+        // Obtener el día de inicio como número (0=domingo, 6=sábado)
+        $startDayNumber = $startDate->format('w'); 
+
+        // Reordenar el array a partir del día de inicio
+        $diasSemana = [
+            0 => 'domingo',
+            1 => 'lunes',
+            2 => 'martes',
+            3 => 'miércoles',
+            4 => 'jueves',
+            5 => 'viernes',
+            6 => 'sábado',
+        ];
+
+        $reservasPorDiaOrdenadas = [];
+        for ($i = 0; $i < 7; $i++) {
+            $diaIndex = ($startDayNumber + $i) % 7;
+            $diaSemana = $diasSemana[$diaIndex];
+            $reservasPorDiaOrdenadas[$diaSemana] = $reservasPorDia[$diaIndex];
+        }
+
+        return $reservasPorDiaOrdenadas;
+    }
 }

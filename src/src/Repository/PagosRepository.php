@@ -47,7 +47,7 @@ class PagosRepository extends ServiceEntityRepository
     public function findPagosByPersonaId($personaId): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.idPersona = :val')
+            ->andWhere('p.idCliente = :val') //Busca por cliente?
             ->setParameter('val', $personaId)
             ->orderBy('p.id', 'ASC')
             ->getQuery()

@@ -47,14 +47,24 @@ class Cliente
     private $cobros;
 
     /**
-     * @ORM\OneToMany(targetEntity="Clases", mappedBy="cliente")
+     * @ORM\Column(type="boolean")
      */
-    private $clases;
+    private $esAlumno;//esAlumno
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $visible;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Grupo", mappedBy="cliente")
+     */
+    private $grupos;
 
     public function __construct()
     {
         $this->cobros = new ArrayCollection();
-        $this->clases = new ArrayCollection();
+        $this->grupos = new ArrayCollection();
     }
 
 
@@ -117,6 +127,9 @@ class Cliente
         return $this;
     }
 
+    /*
+    Para reemplazar "getPersonaByPersonaId" de customService luego de que se busque en el repo de Persona
+    */
     public function toArrayAsociativo(): array{
         return array(
             "id"    => $this->getId(),
@@ -124,6 +137,8 @@ class Cliente
             "telefono"  => $this->getTelefono(),
             "fechanac"  => $this->getFechaNac() ? $this->getFechaNac() : '',
             "saldo"     => 0,
+            "esalumno" => $this->isEsAlumno(),
+            "visible" => $this->isVisible(),
         );
     }
 
@@ -140,28 +155,49 @@ class Cliente
         return $this;
     }
 
-    public function getClases(): ?Collection
+    public function isEsAlumno(): ?bool
     {
-        return $this->clases;
+        return $this->esAlumno;
     }
 
-    public function addClase(Clase $clase): self
+    public function setEsAlumno(bool $esAlumno): self
     {
-        if (!$this->clases->contains($clase)) {
-            $this->clases[] = $clase;
-            $clase->setCliente($this);
+        $this->esAlumno = $esAlumno;
+
+        return $this;
+    }
+
+    public function isVisible(): ?bool
+    {
+        return $this->visible;
+    }
+
+    public function setVisible(bool $visible): self
+    {
+        $this->visible = $visible;
+
+        return $this;
+    }
+
+    public function getGrupos() 
+    { 
+        return $this->grupos; 
+    }
+
+    public function addGrupo(Grupo $grupo): self
+    {
+        if (!$this->grupos->contains($grupo)) {
+            $this->grupos[] = $grupo;
         }
         return $this;
     }
 
-    public function removeClase(Clase $clase): self
+    public function removeGrupo(Grupo $grupo): self
     {
-        if ($this->clases->removeElement($clase)) {
-            if ($clase->getCliente() === $this) {
-                $clase->setCliente(null);
+        if ($this->grupos->removeElement($grupo)) {
+            if ($grupo->getCliente() === $this) {
             }
         }
         return $this;
-    }
-      
+    }      
 }

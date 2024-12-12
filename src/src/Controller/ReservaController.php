@@ -6,7 +6,6 @@ use DateTime;
 use DateInterval;
 use App\Entity\Grupo;
 use App\Entity\Cancha;
-use App\Entity\Persona;
 use App\Entity\Reserva;
 use App\Entity\Alquiler;
 use Doctrine\Persistence\ManagerRegistry;
@@ -143,7 +142,7 @@ class ReservaController extends AbstractController
             // "hora_fin"      =>  $parametros['hora_fin'], // Mantén como string
             "persona_id"    =>  $persona_id,
             "replica"       => (isset($parametros['replica']) && $parametros['replica'] == 'true') ? true : false,
-            "estado_id"     =>  0,
+            "estado_id"     =>  1,
             "grupo"         => isset($parametros['grupo_ids']) ? $parametros['grupo_ids'] : null,
             "tipo"          =>  $parametros['tipo'],
         );
@@ -182,7 +181,7 @@ class ReservaController extends AbstractController
             if (is_numeric($cliente_id)) {
                    $grupo_cliente = new Grupo();
                    $grupo_cliente->setReservaId($reserva->getId());
-                   $grupo_cliente->setPersonaId($cliente_id);
+                   $grupo_cliente->setClienteId($cliente_id);
                    $em->persist($grupo_cliente);
                    }
          }
@@ -267,7 +266,7 @@ class ReservaController extends AbstractController
                 $canchaId,
                 count($clientes) > 1 ? 2 : 1, // tipo_clase_id (Siempre en grupo)
                 0, // replica
-                0 // estado
+                1 // estado
             );
 
             if ($cs->without_reservations($canchaId, $fechaInicio, $horaIni, $horaFin)) {
@@ -336,7 +335,7 @@ class ReservaController extends AbstractController
             $canchaId,
             count($clientes) > 1 ? 2 : 1, // tipo_clase_id (1 = individual, 2 = grupal)
             0, // replica
-            0 // estado
+            1 // estado
         );
 
         if ($cs->without_reservations($canchaId, $fechaInicio, $horaIni, $horaFin)) {
@@ -415,7 +414,7 @@ class ReservaController extends AbstractController
 
         $em = $doctrine->getManager();
         $reserva = $em->getRepository(Reserva::class)->findOneById($reservaId);
-        $reserva->setPersonaId($personaId);
+        $reserva->setProfesorId($personaId);
         $em->persist($reserva);
         $em->flush();
 
@@ -450,7 +449,7 @@ class ReservaController extends AbstractController
             if (is_numeric($cliente_id)) {
                 $grupo_cliente = new Grupo();
                 $grupo_cliente->setReservaId($reservaId);
-                $grupo_cliente->setPersonaId($cliente_id);
+                $grupo_cliente->setClienteId($cliente_id);
                 $em->persist($grupo_cliente);
             }
         }
@@ -485,7 +484,7 @@ public function suspenderReserva(int $reserva_id, ManagerRegistry $doctrine): Re
     }
 
     if ($reserva->getEstadoId() != 1) {
-        $reserva->setEstadoId(1);
+        $reserva->setEstadoId(2);
         $em->flush();
         $resp = [
             'rta' => 'ok',
@@ -525,13 +524,13 @@ public function suspenderReserva(int $reserva_id, ManagerRegistry $doctrine): Re
             if (is_numeric($cliente_id)) {
                 $grupo_cliente = new Grupo();
                 $grupo_cliente->setReservaId($reservaId);
-                $grupo_cliente->setPersonaId($cliente_id);
+                $grupo_cliente->setClienteId($cliente_id);
                 $em->persist($grupo_cliente);
             }
         }
 
         $reserva = $em->getRepository(Reserva::class)->findOneById($reservaId);
-        $reserva->setPersonaId($profesorId);
+        $reserva->setProfesorId($profesorId);
 
         if ($request->get('fecha') != null) {
             $reserva->setFecha(new DateTime($request->get('fecha')));

@@ -11,7 +11,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\ClienteRepository;
 use App\Service\CustomService as ServiceCustomService;
+use App\Service\DateTimeFormatterService;
+
 
 
 /**
@@ -53,11 +56,14 @@ class ClienteController extends AbstractController
        $nombre = $data->nombre;
        $telefono = $data->telefono;
        $fecha_nac = isset($data->fechaNac) &&  strlen($data->fechaNac) > 0 ? new DateTime($data->fechaNac): null;
+       $esCliente = isset($data->esAlumno) && $data->esAlumno == 'true'? true: false;
 
        $cliente = new Cliente();
        $usuario = new Usuario();
        $cliente->setNombre($nombre)->setTelefono($telefono);
        $cliente -> setFechaNac($fecha_nac);
+       $cliente->setEsAlumno($esAlumno);
+       $cliente->setVisible(true);
 
        $usuario->setUsername($cliente->getNombre() + $cliente->getTelefono()); // cambiar método desde el cliente
        $usuario->setCliente($cliente); // Idem
@@ -105,6 +111,13 @@ class ClienteController extends AbstractController
                 if (isset($data->telefono)){
                     $cliente->setTelefono($data->telefono);
                 }
+                if (isset($data->fechaNac)){
+                    $fechaNac = strlen($data->fechaNac) > 0 ? new DateTime($data->fechaNac): null;
+                    $cliente->setFechaNac($fechaNac);
+                }
+                if (isset($data->visible)){
+                    $cliente->setVisible($data->visible);
+                }
 
                 $em->persist($cliente);
                 $em->flush();
@@ -125,31 +138,85 @@ class ClienteController extends AbstractController
     /**
      * @Route("/cliente/next-clases", methods={"GET"}, name="app_get_next_clases")
      */
-    public function getNextClases(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
+    public function getNextReservas(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
     {
         $clienteId = $request->query->get('clienteId');
         $startDate = new \DateTime($request->query->get('startDate'));
 
         $em = $doctrine->getManager();
-        $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
+        $cliente = $em->getRepository(Cliente::class)->findOneById($clienteId);
         
         if (!$cliente) {
-            $resp['rta'] =  "error";
+            $resp['rta'] = "error";
             $resp['detail'] = "No existe el cliente";
-        } else{
+        } else {
             $today = new \DateTime();
             $today->setTime(0, 0);
-            if($startDate < $today){
-                $resp['rta'] =  "error";
+            if ($startDate < $today) {
+                $resp['rta'] = "error";
                 $resp['detail'] = "La fecha no debe ser anterior a hoy";
-            }else{
+            } else {
                 $endDate = (clone $startDate)->modify('+6 days');
-                $clasesFormateadas = $cs->getNextClasesOfCliente($startDate, $endDate, $cliente);
-                $resp['rta'] =  "ok";
-                $resp['detail'] = $clasesFormateadas;
+                $reservasFormateadas = $cs->getNextReservasOfCliente($startDate, $endDate, $cliente);
+                $resp['rta'] = "ok";
+                $resp['detail'] = $reservasFormateadas;
             }
         }
         return $this->json($resp);
     }
 
+    /**
+     * @Route("/personas", name="app_personas", methods={"GET"})
+     */
+    public function getPersonas(): Response
+    {
+        $personas = $this->getDoctrine()->getRepository( Cliente::class )->findAll();
+        return $this->json($personas);
+    }
+
+    /**
+     * @Route("/persona", name="app_personas", methods={"GET"})
+     */
+    public function getPersona(
+        Request $request,
+        ManagerRegistry $doctrine
+    ): Response
+    {
+        $clienteId = $request->query->get('personaId');
+        $em = $doctrine->getManager();
+        $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
+        return $this->json($cliente);
+    }
+
+    /**
+     * @Route("/persona/alumnos", name="app_alumnos", methods={"GET"})
+     */
+    public function getAlumnos(
+        ClienteRepository $clienteRepository,
+        DateTimeFormatterService $formatter
+    ): Response
+    {
+        $clientes = $clienteRepository->findAllAlumnos();
+        $clientesFormateado=[];
+        
+        foreach($clientes as $cliente){
+            $clienteFormateado = $cliente->toArrayAsociativo();
+            if ($clienteFormateado["fechanac"] != ""){
+                $clienteFormateado["fechanac"] = $formatter->getFormattedDate($clienteFormateado["fechanac"]);
+            }
+            array_push($clientesFormateado, $clienteFormateado);
+        }
+        $resp = array(
+            "rta"=> "error",
+            "detail"=> "Se produjo un error en el alta de la cancha."
+        );
+        if (isset($clientesFormateado)){
+
+            $resp['rta'] =  "ok";
+            $resp['detail'] = $clientesFormateado;
+
+        }
+        return $this->json($resp);
+    }
+    
 }

@@ -247,12 +247,21 @@ public function getClasesPorProfesor(Request $request, ReservaRepository $reserv
         'message' => 'Clases encontradas.',
         'data' => $reservasFormateadas,
     ], 200);
-}
+    }
 
- /**
- * @Route("/historial-profesor-mes", name="app_clases_profesor", methods={"GET"})
- */
-public function getClasesPorProfesorMes(Request $request, ReservaRepository $reservaRepository, CustomService $cs): Response
+    /**
+     * @Route("/profesores", name="app_profesores", methods={"GET"})
+     */
+    public function getProfesores_Persona(): Response
+    {
+        $profesores = $this->getDoctrine()->getRepository(Profesor::class)->findAll();
+
+        return $this->json($profesores);
+    } 
+    /**
+    * @Route("/historial-profesor-mes", name="app_clases_profesor", methods={"GET"})
+    */
+    public function getClasesPorProfesorMes(Request $request, ReservaRepository $reservaRepository, CustomService $cs): Response
 {
     $profesorId = $request->query->get('profesor_id'); // ID del profesor
     $fechaDesde = $request->query->get('fechaDesde');

@@ -53,6 +53,9 @@ class CobroController extends AbstractController
             elseif ($cobro -> getConcepto() === '2'){
                 $concepto_desc = 'Alquiler';
             }
+            elseif ($cobro -> getConcepto() === '3'){
+                $concepto_desc = 'Items';
+            }
             else{
                 $concepto_desc = 'Varios';
             }
@@ -292,7 +295,87 @@ class CobroController extends AbstractController
         return $this->json(($resp));
     }
     
+    /**
+     * @Route("/cobrosCliente", name="get_cobros_cliente", methods={"GET"})
+     */
+    public function getCobrosCliente(Request $request, ManagerRegistry $doctrine): Response
+    {
+        $clienteId = $request->query->get('cliente_id');
+
+        try {
+            $fechaInicio = $request->query->get('fecha_inicio') 
+                ? new \DateTime($request->query->get('fecha_inicio')) 
+                : (new \DateTime('2010-10-10'));
+        } catch (\Exception $e) {
+            $fechaInicio = new \DateTime('2010-10-10');
+        }
+
+        try {
+            $fechaFin = $request->query->get('fecha_fin') 
+                ? new \DateTime($request->query->get('fecha_fin')) 
+                : new \DateTime();
+        } catch (\Exception $e) {
+            $fechaFin = new \DateTime();
+        }
+
+        $concepto = $request->query->get('concepto') ?: '';
+
+        $monto = $request->query->get('monto');
+        if (!is_numeric($monto)) {
+            $monto = 0; 
+        }
+
+        $page = $request->query->get('page') ?: 1;
+        if (!is_numeric($page) || $page < 1) {
+            $page = 1; 
+        }
+
+        /* 
+            PAGINACION
+            Está puesto en 1000 porque la paginacion no esta implementada en el frontend
+            Enviar los parametros, entre ellos la "page" para usar la paginacion.
+         */
+        $limit = 1000; // Elementos por página.
+
+        if (!is_numeric($clienteId) || !$clienteId) {
+            $resp = array(
+                "rta"=> "error",
+                "detail"=> "No se encontró al cliente"
+            );
+        }
+        else{
+            $em = $doctrine->getManager();
+            $cobros = $em->getRepository(Cobro::class)->findCobrosByClienteId($clienteId, $fechaInicio, $fechaFin, $concepto, $monto, $page, $limit);
+            
+            $cobrosFormateados = [];
+            foreach ($cobros['data'] as $cobro) {
+                
+                $cobroFormateado = [
+                    'id' => $cobro->getId(),
+                    'fecha' => $cobro->getFecha()->format('Y-m-d'),
+                    'concepto' => $cobro->getConcepto(),
+                    'importe' => $cobro->getMonto()
+                ];
+    
+                $cobrosFormateados[] = $cobroFormateado;
+            }
 
 
+            $resp = array(
+                "rta"=> "ok",
+                "detail"=> 
+                    [
+                        "pagos" => $cobrosFormateados,
+                        "page" => $cobros['page'],
+                        'total' => $cobros['total'],
+                        'totalPages' => $cobros['totalPages'],
+                        'nextPage' => $cobros['nextPage'],
+                        'previousPage' => $cobros['previousPage'],
+                    ]
+            );
+        }
+
+        return $this->json(($resp));
+    }
 
 }
