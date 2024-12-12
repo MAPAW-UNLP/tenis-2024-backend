@@ -254,7 +254,7 @@ class ClienteController extends AbstractController
             $fecha = $data['date'] ? new \DateTime($data['date']) : null;
             $hora_ini = $data['startTime'] ? new \DateTime($data['startTime']) : null;
             $hora_fin = $data['endTime'] ? new \DateTime($data['endTime']) : null;
-            $clienteId = $data['clienteId'] ? $data['clienteId'] : null;                 
+            $clienteId = $data['clienteID'] ? $data['clienteID'] : null;                 
         } catch (\Exception $e) {
             $resp['rta'] =  "error";
             $resp['detail'] = "Parámetros inválido1s";
