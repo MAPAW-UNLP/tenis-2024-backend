@@ -422,6 +422,7 @@ class CustomService
                 'hora_fin' => $reserva->getHoraFin()->format('H:i:s'),
                 'estado' => $this->em->getRepository(Estado::class)->findOneById($reserva->getEstadoId())->getDescripcion(),
                 'tipo' => $this->em->getRepository(Clases::class)->findOneById($reserva->getIdTipoClase())->getTipo(),
+                'importe' => $this->em->getRepository(Clases::class)->findOneById($reserva->getIdTipoClase())->getImporte(),
                 'profesor' => $this->em->getRepository(Profesor::class)->findOneById($reserva->getProfesorId())->getNombre()
             ];
 
