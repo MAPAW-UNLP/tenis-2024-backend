@@ -103,6 +103,40 @@ class PagosController extends AbstractController
         return $this->json($objPagos);
     }
 
+        /**
+     * @Route("/stats-pagos", name="get_pagos_historial", methods={"GET"})
+     */
+    public function getEstadisticasPagos(Request $request,
+    ManagerRegistry $doctrine,
+    ServiceCustomService $cs): Response
+    {
+        $fechaDesde = $request->query->get('fechaDesde');
+        $fechaHasta = $request->query->get('fechaHasta'); // Fecha en formato 'Y-m-d'
+
+        // Validar que la fecha sea válida
+        if (!$fechaDesde || !\DateTime::createFromFormat('Y-m-d', $fechaDesde)) {
+            return $this->json([
+                'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+            ], 400);
+        }
+        // Validar que la fecha sea válida
+        if (!$fechaHasta || !\DateTime::createFromFormat('Y-m-d', $fechaHasta)) {
+            return $this->json([
+                'message' => 'Fecha inválida. Por favor, use el formato YYYY-MM-DD.',
+            ], 400);
+        }
+
+        // Obtener las reservas para el profesor en la fecha dada
+        $em = $doctrine->getManager();
+        $pagos = $em->getRepository( Pagos::class )->getEstadisticasPagos($fechaDesde, $fechaHasta);
+        $pagosFormat = $cs->pagosToDataChart($pagos);
+
+        return $this->json([
+            'message' => 'Pagos totales.',
+            'data' => $pagosFormat,
+        ], 200);
+    }
+
 
      /**
      * @Route("/pagos", name="add_pagos", methods={"POST"})

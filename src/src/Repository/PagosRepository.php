@@ -91,6 +91,18 @@ class PagosRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function getEstadisticasPagos($fechaDesde, $fechaHasta): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.fecha >= :fechaDesde')
+            ->andWhere('p.fecha <= :fechaHasta')
+            ->setParameter('fechaDesde', $fechaDesde)
+            ->setParameter('fechaHasta', $fechaHasta)
+            ->orderBy('p.motivo', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function registrarPagoProfesor($profesor, $motivo, $monto, $descripcion, $fecha,
         ManagerRegistry $doctrine)
     {
