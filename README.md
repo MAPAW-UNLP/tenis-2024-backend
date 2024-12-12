@@ -43,9 +43,9 @@ Nota: Estos comandos están escritos para ejecutarse fuera del contenedor, es de
 
 ### Seeds
 * Para añadir los datos del archivo "mysql/datos.sql" a la base de datos, ingresar a la terminal mysql del contenedor tenis_bd
-docker exec -it tenis_bd mysql -u tenis -p
+`docker exec -it tenis_bd mysql -u tenis -p`
 * Pedirá la password
-tenis
+`tenis`
 * Pedirá el nombre de la base de datos
-use tenis
+`use tenis`
 * Copiar y pegar los comandos SQL del archivo mysql/datos.sql
