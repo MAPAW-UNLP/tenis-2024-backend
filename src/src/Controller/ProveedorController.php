@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Proveedor;
 use App\Repository\ProveedorRepository;
+use App\Repository\PagosRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,7 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 class ProveedorController extends AbstractController {
     /**
-     * @Route("/proveedor", name="app_get_proveedores", methods={"GET"})
+     * @Route("/proveedores", name="app_get_proveedores", methods={"GET"})
      */
     public function getProveedores(): Response
     {
@@ -25,7 +26,7 @@ class ProveedorController extends AbstractController {
     }
 
     /**
-     * @Route("/proveedor/{id}", name="app_get_proveedor_by_id", methods={"GET"})
+     * @Route("/proveedores/{id}", name="app_get_proveedor_by_id", methods={"GET"})
     */
     public function getProveedor(Request $request,$id, ProveedorRepository $proveedorRepository): Response
     {
@@ -40,7 +41,7 @@ class ProveedorController extends AbstractController {
 
 
     /**
-     * @Route("/proveedor", name="app_alta_proveedor", methods={"POST"})
+     * @Route("/proveedores", name="app_alta_proveedor", methods={"POST"})
     */
     public function addProveedor(Request $request, ManagerRegistry $doctrine,
      EntityManagerInterface $entityManager): Response
@@ -71,7 +72,7 @@ class ProveedorController extends AbstractController {
     }
 
     /**
-    * @Route("/proveedor/{id}", name="app_modificar_proveedor", methods={"PUT"})
+    * @Route("/proveedores/{id}", name="app_modificar_proveedor", methods={"PUT"})
     */
     public function updateProveedor(Request $request, $id, ProveedorRepository $proveedorRepository): Response {
       $data = json_decode($request->getContent());
@@ -101,13 +102,17 @@ class ProveedorController extends AbstractController {
 
       
     /**
-     * @Route("/proveedor/{id}", name="app_baja_proveedor", methods={"DELETE"})
+     * @Route("/proveedores/{id}", name="app_baja_proveedor", methods={"DELETE"})
      */
-    public function deleteProveedor($id, ProveedorRepository $proveedorRepository): Response
+    public function deleteProveedor($id, ProveedorRepository $proveedorRepository, PagosRepository $pagosRepository): Response
     {
         $proveedor = $proveedorRepository->findOneById($id);
 
         if ($proveedor) {
+            $pagos = $pagosRepository->findPagosByProveedorId($id);
+            foreach ($pagos as $pago) {
+                $pagosRepository->remove($pago, true);
+            }
             $proveedorRepository->remove($proveedor, true);
             return $this->json([
                 'message' => 'Se ha eliminado el proveedor.',
