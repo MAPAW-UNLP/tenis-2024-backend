@@ -27,7 +27,7 @@ class CustomService
 {
 
     private $doctrine;
-    private $estadosArr = ['ASIGNADO', 'CANCELADO', 'CONSUMIDO'];
+    private $estadosArr = ['ASIGNADO', 'CANCELADO', 'CONSUMIDO', 'PENDIENTE'];
     private $em;
     private $formatter;
 
@@ -508,7 +508,7 @@ class CustomService
 
     public function getNextReservasOfCliente(\DateTime $startDate, \DateTime $endDate, $cliente) 
     {
-        $reservas = $this->em->getRepository(Grupo::class)->findReservasBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
+        $reservas = $this->em->getRepository(Reserva::class)->findReservasBetweenStartDateAndEndDate($startDate, $endDate, $cliente);
         $reservasPorDia = [
             0 => [], // domingo
             1 => [], // lunes
@@ -530,6 +530,7 @@ class CustomService
                 'hora_fin' => $reserva->getHoraFin()->format('H:i:s'),
                 'estado' => $this->em->getRepository(Estado::class)->findOneById($reserva->getEstadoId())->getDescripcion(),
                 'tipo' => $this->em->getRepository(Clases::class)->findOneById($reserva->getIdTipoClase())->getTipo(),
+                'importe' => $this->em->getRepository(Clases::class)->findOneById($reserva->getIdTipoClase())->getImporte(),
                 'profesor' => $this->em->getRepository(Profesor::class)->findOneById($reserva->getProfesorId())->getNombre()
             ];
 
@@ -558,5 +559,41 @@ class CustomService
         }
 
         return $reservasPorDiaOrdenadas;
+    }
+
+    public function findCanceledReservasByClienteId($cliente){
+        $reservas = $this->em->getRepository(Reserva::class)->findReservasByClientIdAndEstadoCanceled($cliente);
+        /*
+        $reservasFormateadas = [];
+        foreach ($reservas as $reserva) {
+            $reservaFormateada = [
+                'id' => $reserva->getId(),
+                'cancha' => $this->em->getRepository(Cancha::class)->findOneById($reserva->getCanchaId())->getNombre(),
+                'fecha' => $reserva->getFecha()->format('Y-m-d'),
+                'hora_ini' => $reserva->getHoraIni()->format('H:i:s'),
+                'hora_fin' => $reserva->getHoraFin()->format('H:i:s'),
+                'estado' => $this->em->getRepository(Estado::class)->findOneById($reserva->getEstadoId())->getDescripcion(),
+                'tipo' => $this->em->getRepository(Clases::class)->findOneById($reserva->getIdTipoClase())->getTipo(),
+                'profesor' => $this->em->getRepository(Profesor::class)->findOneById($reserva->getProfesorId())->getNombre()
+            ];
+            $reservasFormateadas[] = $reservaFormateada;
+        }
+        return $reservasFormateadas;
+        */
+        return count($reservas);
+    }
+
+    public function ModificarClaseAFavor($fecha, $hora_ini, $hora_fin, $clienteId){
+        $clases = $this->em->getRepository(Reserva::class)->findReservasByClientIdAndEstadoCanceled($clienteId);
+        $claseAFavor = $clases[0];
+        $claseAFavor->setFecha($fecha);
+        $claseAFavor->setHoraIni($hora_ini);
+        $claseAFavor->setHoraFin($hora_fin);
+        $claseAFavor->setEstadoId(4); // ESTADO PENDIENTE
+
+        //validarReserva
+
+        $this->em->persist($claseAFavor);
+        $this->em->flush();
     }
 }

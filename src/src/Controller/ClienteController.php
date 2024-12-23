@@ -218,5 +218,66 @@ class ClienteController extends AbstractController
         }
         return $this->json($resp);
     }
+
     
+    /**
+     * @Route("/cliente/clasesAFavor", name="cliente_credits", methods={"GET"})
+     */
+    public function getClasesAFavor(Request $request, ManagerRegistry $doctrine, ServiceCustomService $cs): Response
+    {
+        $clienteId = $request->query->get('clienteID');
+        $em = $doctrine->getManager();
+        $cliente = $em->getRepository( Cliente::class )->findOneById($clienteId);
+
+        if (!$cliente) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "No se encontró al cliente";
+        }
+        else {
+            $reservas = $cs->findCanceledReservasByClienteId($cliente);
+            $resp['rta'] =  "ok";
+            $resp['detail'] = $reservas;
+        }       
+
+        return $this->json($resp);
+    }   
+    
+    
+    /**
+     * @Route("/cliente/reservarClaseAFavor", name="cliente_reservar_clase_a_favor", methods={"POST"})
+     */
+    public function reservarClaseAFavor(Request $request, ServiceCustomService $cs): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        try {
+            $fecha = $data['date'] ? new \DateTime($data['date']) : null;
+            $hora_ini = $data['startTime'] ? new \DateTime($data['startTime']) : null;
+            $hora_fin = $data['endTime'] ? new \DateTime($data['endTime']) : null;
+            $clienteId = $data['clienteID'] ? $data['clienteID'] : null;                 
+        } catch (\Exception $e) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "Parámetros inválido1s";
+            return $this->json($resp);
+        }
+
+        if (!$fecha || !$hora_ini || !$hora_fin || !$clienteId) {
+            $resp['rta'] =  "error";
+            $resp['detail'] = "Parámetros inválidos";
+        }
+        else{
+            try{
+                $cs->ModificarClaseAFavor($fecha, $hora_ini, $hora_fin, $clienteId);            
+                $resp['rta'] =  "ok";
+                $resp['detail'] = "Se cambió la fecha y hora de la clase";
+            }
+            catch (\Exception $e){
+                $resp['rta'] =  "error";
+                $resp['detail'] = "No hay clases a favor";
+            }
+        }
+
+        return $this->json($resp);
+    }
+
 }

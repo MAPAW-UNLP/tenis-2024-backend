@@ -30,13 +30,12 @@ INSERT INTO clases (tipo, importe) VALUES ('GRUPAL', 10000);
 
 -- estados 
 INSERT INTO estado(descripcion)
-VALUES("ASIGNADO"),("CANCELADO")("CONSUMIDO");--(1/2/3)
+VALUES("ASIGNADO"),("CANCELADO"),("CONSUMIDO"),("PENDIENTE");--(1/2/3/4)
 
 
 -- Datos de prueba para entidades faltantes
 INSERT INTO constancia_mantenimiento (fecha) VALUES ('2024-11-01');
 INSERT INTO cuenta (cliente_id, importe, fecha) VALUES (@clienteId, 1000, '2024-11-01');
-INSERT INTO grupo (reserva_id, cliente_id) VALUES (1, @clienteId);
 INSERT INTO horario_disponible (fecha, hora_ini, hora_fin, profesor_id) VALUES ('2024-11-01', '08:00:00', '10:00:00', @profeId);
 INSERT INTO item_alquiler (description, importe) VALUES ('Raqueta', 50);
 INSERT INTO periodo_ausencia (fecha_ini, fecha_fin, motivo, profesor_id, estado_id) VALUES ('2024-11-01', '2024-11-15', 'Vacaciones', @profeId, 1);
@@ -67,10 +66,18 @@ VALUES (100.0, "2024-11-18", "18:00:00", "clase a", @clienteId, "Una descripcion
 
 -- crear clases(reserva)
 INSERT INTO reserva(cancha_id, fecha, hora_ini, hora_fin, profesor_id, replica, estado_id, id_tipo_clase, pago_id)
-VALUES (@canchaId, "2024-12-16", "15:00:00", "16:00:00", @profeId, 0, 1, 1, null);
+VALUES (@canchaId, "2024-12-16", "15:00:00", "16:00:00", @profeId, 0, 1, 1, null),
+       (@canchaId, "2024-12-17", "15:00:00", "16:00:00", @profeId, 0, 2, 1, null),
+       (@canchaId, "2024-12-18", "15:00:00", "16:00:00", @profeId, 0, 2, 1, null),
+       (@canchaId, "2024-12-19", "15:00:00", "16:00:00", @profeId, 0, 2, 1, null);
 
-SET @reservaId = (SELECT id FROM reserva LIMIT 1);
+
+SET @reservaUnoId = (SELECT id FROM reserva WHERE fecha = '2024-12-17');
+SET @reservaDosId = (SELECT id FROM reserva WHERE fecha = '2024-12-18');
+SET @reservaTresId = (SELECT id FROM reserva WHERE fecha = '2024-12-19');
  
 -- asignar reserva(clase) a cliente (cambiar a cliente_id)
 INSERT INTO grupo(reserva_id, cliente_id)
-VALUES(@reservaId, @clienteId);
+VALUES(@reservaUnoId, @clienteId),
+      (@reservaDosId, @clienteId),
+      (@reservaTresId, @clienteId);

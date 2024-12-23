@@ -38,3 +38,14 @@ Para la instalación se recomienda utilizar Docker que facilita la instalación 
 * Ejecutar migraciones: `docker exec -it tenis_php php bin/console doctrine:migrations:migrate`.
 
 Nota: Estos comandos están escritos para ejecutarse fuera del contenedor, es decir desde una terminal en el host. Para correrlos desde una terminal dentro del contenedor se debe eliminar la primera parte del comando: `docker exec -it tenis_php`.  
+
+
+
+### Seeds
+* Para añadir los datos del archivo "mysql/datos.sql" a la base de datos, ingresar a la terminal mysql del contenedor tenis_bd:
+`docker exec -it tenis_bd mysql -u tenis -p`
+* Pedirá la password:
+`tenis`
+* Pedirá el nombre de la base de datos:
+`use tenis`
+* Copiar y pegar los comandos SQL del archivo mysql/datos.sql

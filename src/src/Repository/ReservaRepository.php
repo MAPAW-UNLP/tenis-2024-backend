@@ -428,11 +428,47 @@ class ReservaRepository extends ServiceEntityRepository
         }
 
         return $result;
-
+    }
+        
+    
+    /**
+     * @param int $clienteId
+     * @return Reserva[]
+     */
+    public function findReservasByClientIdAndEstadoCanceled($clienteId): array
+    {
+        return $this->createQueryBuilder('r')
+            ->innerJoin('App\Entity\Grupo', 'g', 'WITH', 'r.id = g.reserva_id')
+            ->innerJoin('App\Entity\Cliente', 'c', 'WITH', 'g.cliente = c.id')
+            ->andWhere('r.estado_id = :estado')
+            ->andWhere('c.id = :clienteId')
+            ->setParameter('estado', 2)
+            ->setParameter('clienteId', $clienteId)
+            ->getQuery()
+            ->getResult();
     }
 
-    
-    
+    /**
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @param Cliente $cliente
+     * @return Reserva[]
+     */
+    public function findReservasBetweenStartDateAndEndDate(\DateTime $startDate, \DateTime $endDate, $cliente): array
+    {
+        return $this->createQueryBuilder('r')
+            ->innerJoin('App\Entity\Grupo', 'g', 'WITH', 'r.id = g.reserva_id')
+            ->innerJoin('App\Entity\Cliente', 'c', 'WITH', 'g.cliente = c.id')
+            ->where('c.id = :cliente')
+            ->andWhere('r.fecha BETWEEN :startDate AND :endDate')
+            ->setParameter('cliente', $cliente)
+            ->setParameter('startDate', $startDate->format('Y-m-d'))
+            ->setParameter('endDate', $endDate->format('Y-m-d'))
+            ->orderBy('r.fecha', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }  
+
 
     //  Agregar condiciones para filtrar solapamientos
     //  if ($periodosAusencia) {

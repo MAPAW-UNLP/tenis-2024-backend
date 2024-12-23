@@ -53,25 +53,6 @@ class GrupoRepository extends ServiceEntityRepository
        ;
    }
 
-   /**
-     * @return Reserva[] Returns an array of Reserva objects
-     */
-    public function findReservasBetweenStartDateAndEndDate(\DateTime $startDate, \DateTime $endDate, $cliente)
-    {
-        $qb = $this->createQueryBuilder('g')
-            ->select('r')
-            ->from('App\Entity\Reserva', 'r')
-            ->where('g.cliente = :cliente')
-            ->andWhere('g.reserva_id = r.id')
-            ->andWhere('r.fecha BETWEEN :startDate AND :endDate')
-            ->setParameter('cliente', $cliente)
-            ->setParameter('startDate', $startDate->format('Y-m-d'))
-            ->setParameter('endDate', $endDate->format('Y-m-d'))
-            ->orderBy('r.fecha', 'ASC');
-
-        return $qb->getQuery()->getResult();
-    }
-
 //    /**
 //     * @return Grupo[] Returns an array of Grupo objects
 //     */
